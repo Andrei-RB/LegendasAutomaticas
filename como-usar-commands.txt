@@ -1,0 +1,43 @@
+# ==============================================================================
+# INSTRUÇÕES DE USO E INICIALIZAÇÃO DO APLICATIVO
+# ==============================================================================
+
+1. INICIALIZAÇÃO DOS SERVIÇOS (MANUAL)
+------------------------------------------------------------------------------
+Passo 1: Iniciar Redis (WSL)
+Comando: wsl sudo service redis-server start
+
+Passo 2: Iniciar Celery Worker
+Comando: .\venv\Scripts\python.exe -m celery -A app.workers.celery_worker worker --pool=solo -l info
+
+Passo 3: Iniciar API (Uvicorn)
+Comando: .\venv\Scripts\python.exe -m uvicorn app.main:app --port 8000
+
+
+2. EXECUÇÃO NO NAVEGADOR (FRONTEND)
+------------------------------------------------------------------------------
+Passo 1: Instalar dependências
+Comando: python -m pip install -r requirements.txt
+
+Passo 2: Iniciar Streamlit
+Comando: streamlit run frontend/frontend_app.py
+
+
+# ==============================================================================
+# GERAÇÃO DO EXECUTÁVEL (PYINSTALLER)
+# ==============================================================================
+
+1. INSTALAÇÃO:
+   python -m pip install pyinstaller
+
+2. BUILD:
+   Execute para empacotar o launcher em um único arquivo .exe:
+   pyinstaller --onefile --icon=NONE launcher.py
+
+   Nota: Se tiver um ícone (ex: app.ico), use:
+   pyinstaller --onefile --icon=app.ico launcher.py
+
+3. EXECUÇÃO:
+   O executável "launcher.exe" será gerado na pasta "dist/".
+   Ao executar o ./dist/launcher.exe, ele gerenciará todos os processos 
+   (wsl, uvicorn, celery) e garantirá um desligamento seguro.
