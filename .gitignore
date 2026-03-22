@@ -1,0 +1,56 @@
+# Arquivos de ambiente locais (Extremamente importante não commitar)
+.env
+.env.*
+!.env.example
+
+# Pastas de ambiente virtual Python
+venv/
+env/
+.venv/
+.env/
+
+# Arquivos e pastas de cache do Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Arquivos de logs
+logs/
+*.log
+
+# Pastas de uploads e outputs da aplicação (Evitar subir arquivos de usuários ou gerados)
+uploads/
+outputs/
+test_file.mp4
+test_video.mp4
+test_file.txt
+
+# Ferramentas de teste e cobertura (Pytest, etc)
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+
+# IDEs e Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Notebooks
+.ipynb_checkpoints
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Outros
+*.sqlite3
+db.sqlite3
