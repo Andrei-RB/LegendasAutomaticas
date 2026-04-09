@@ -27,22 +27,22 @@ O processamento é feito de forma **assíncrona e não bloqueante**: o vídeo é
 
 ```
 ┌─────────────────┐     HTTP      ┌──────────────────────────────────┐
-│  Frontend       │ ──────────►  │  FastAPI Backend (Uvicorn)        │
-│  (Streamlit)    │ ◄──────────  │  /api/v1/upload-video             │
-└─────────────────┘              │  /api/v1/status/{job_id}          │
-                                 │  /api/v1/download/{job_id}        │
-                                 └───────────────┬──────────────────┘
+│  Frontend       │ ──────────►   │  FastAPI Backend (Uvicorn)       │
+│  (Streamlit)    │ ◄──────────   │  /api/v1/upload-video            │
+└─────────────────┘               │  /api/v1/status/{job_id}         │
+                                  │  /api/v1/download/{job_id}       │
+                                  └───────────────┬──────────────────┘
                                                  │ Enfileira Task
                                                  ▼
                                  ┌──────────────────────────────────┐
-                                 │  Celery Worker                    │
-                                 │  ├── FFmpeg → extrai áudio (WAV)  │
+                                 │  Celery Worker                   │
+                                 │  ├── FFmpeg → extrai áudio (WAV) │
                                  │  └── Faster-Whisper → gera .srt  │
                                  └───────────────┬──────────────────┘
                                                  │ Broker / Backend
                                                  ▼
                                          ┌──────────────┐
-                                         │     Redis     │
+                                         │     Redis    │
                                          └──────────────┘
 ```
 
@@ -51,7 +51,7 @@ O processamento é feito de forma **assíncrona e não bloqueante**: o vídeo é
 ## 🛠️ Stack Tecnológica
 
 | Camada         | Tecnologia                          | Função                                         |
-|----------------|--------------------------------------|------------------------------------------------|
+|----------------|-------------------------------------|------------------------------------------------|
 | **Backend**    | FastAPI + Uvicorn                   | API REST assíncrona e servidor ASGI            |
 | **Frontend**   | Streamlit                           | Interface web de upload e monitoramento        |
 | **IA / ML**    | Faster-Whisper (`base`, CPU/int8)   | Transcrição de fala para texto com timestamps |
@@ -94,8 +94,8 @@ A aplicação foi construída com referências às diretrizes **OWASP** e **NIST
 
 ```bash
 # Clone o repositório
-git clone https://github.com/seu-usuario/legenda_app.git
-cd legenda_app
+git clone https://github.com/Andrei-RB/LegendasAutomaticas
+cd LegendasAutomaticas
 
 # Crie e ative o ambiente virtual
 python -m venv venv
@@ -111,13 +111,16 @@ cp .env.example .env
 ### Inicialização dos Serviços
 
 ```bash
-# 1. Backend FastAPI
-uvicorn app.main:app --port 8000
+# 1. Redis
+wsl sudo service redis-server start
 
-# 2. Worker Celery (em outro terminal)
-python -m celery -A app.workers.celery_worker worker --pool=solo --loglevel=info
+# 2. Backend FastAPI
+.\venv\Scripts\python.exe -m uvicorn app.main:app --port 8000
 
-# 3. Frontend Streamlit (em outro terminal)
+# 3. Worker Celery (em outro terminal)
+.\venv\Scripts\python.exe -m celery -A app.workers.celery_worker worker --pool=solo -l info
+
+# 4. Frontend Streamlit (em outro terminal)
 streamlit run frontend/frontend_app.py
 ```
 
