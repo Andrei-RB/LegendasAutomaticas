@@ -1,66 +1,166 @@
-# Secure Subtitle Generator AI
+# 🎬 LegendasAutomáticas
 
-Um sistema avançado, seguro e distribuído projetado via Monolito Modular, focando na premissa de Software Orientado a Serviços (SOA), permitindo processamento assíncrono para transcrição massiva de mímicas a voz (.srt).
-
-## 🚀 Arquitetura (SOA-Prepared Monolith)
-
-1. **Frontend Minimalista/Moderno** que comunica com Rest API.
-2. **Backend FastAPI** validador com robustez e mitigação nativa do OWASP Top 10 (Rate limits, Input sanitation).
-3. **Queue Manager Redis + Celery** processando tarefas complexas em background (FFMpeg e Faster Whisper).
-
-### 🔐 Segurança
-O software baseia-se num framework estrito: Strict Headers CSP/X-Frame, restrição massiva de uploads com verificação lógica, rotação de logger formato JSON (NIST complient compliance para SIEM rules).
+> Pipeline assíncrono com IA para geração automática de arquivos de legenda **SRT** a partir de vídeos — pensado para criadores de conteúdo, editores de vídeo e produtoras.
 
 ---
 
-## 🛠 Pré-requisitos (Instalações OBRIGATÓRIAS)
+## 📌 Visão Geral
 
-### 1. Sistema & Ferramentas
-Você precisará ter instalado:
-1. **Python** >= 3.10
-2. **FFmpeg**: O sistema usa o ffmpeg global. Instale via scoop no windows, ou baixe e adicione na variável (PATH): `choco install ffmpeg` ou via download manual (adicione a pasta bin ao "Environment Variables" > "Path"). Verifique executando `ffmpeg -version` no terminal.
-3. **Redis**: Banco em memoria. No Windows nativamente:
-   - Baixe as releases compativeis do nicolas (ou execute num WSL/Docker). `choco install redis-64`.
-   - Inicialize o servidor rodando em background: `redis-server` (Verifique na 6379 port).
+**LegendasAutomáticas** é uma aplicação web full-stack que transcreve automaticamente o áudio de um vídeo e gera um arquivo de legenda no formato `.srt`, pronto para ser importado em qualquer editor de vídeo (CapCut, DaVinci Resolve, Premiere, etc).
 
-### 2. Ambientes de Configuração
-Crie um virtual environment nativo:
-```powershell
+O processamento é feito de forma **assíncrona e não bloqueante**: o vídeo é enviado pelo usuário, enfileirado e processado em background por um worker de IA, com progresso em tempo real na interface.
+
+---
+
+## ✨ Funcionalidades
+
+- 📤 Upload de vídeo via interface web (Streamlit)
+- 🤖 Transcrição automática com modelo **Faster-Whisper** (OpenAI Whisper otimizado)
+- 📝 Geração de legenda `.srt` **palavra por palavra** (ideal para Reels e Shorts)
+- 📊 Progresso em tempo real com polling assíncrono
+- 📥 Download direto do arquivo `.srt` gerado
+- 🔒 Camada de segurança aplicada em toda a API
+
+---
+
+## 🏗️ Arquitetura
+
+```
+┌─────────────────┐     HTTP      ┌──────────────────────────────────┐
+│  Frontend       │ ──────────►  │  FastAPI Backend (Uvicorn)        │
+│  (Streamlit)    │ ◄──────────  │  /api/v1/upload-video             │
+└─────────────────┘              │  /api/v1/status/{job_id}          │
+                                 │  /api/v1/download/{job_id}        │
+                                 └───────────────┬──────────────────┘
+                                                 │ Enfileira Task
+                                                 ▼
+                                 ┌──────────────────────────────────┐
+                                 │  Celery Worker                    │
+                                 │  ├── FFmpeg → extrai áudio (WAV)  │
+                                 │  └── Faster-Whisper → gera .srt  │
+                                 └───────────────┬──────────────────┘
+                                                 │ Broker / Backend
+                                                 ▼
+                                         ┌──────────────┐
+                                         │     Redis     │
+                                         └──────────────┘
+```
+
+---
+
+## 🛠️ Stack Tecnológica
+
+| Camada         | Tecnologia                          | Função                                         |
+|----------------|--------------------------------------|------------------------------------------------|
+| **Backend**    | FastAPI + Uvicorn                   | API REST assíncrona e servidor ASGI            |
+| **Frontend**   | Streamlit                           | Interface web de upload e monitoramento        |
+| **IA / ML**    | Faster-Whisper (`base`, CPU/int8)   | Transcrição de fala para texto com timestamps |
+| **Áudio**      | FFmpeg                              | Extração e conversão de áudio (WAV 16kHz mono) |
+| **Filas**      | Celery                              | Processamento assíncrono em background          |
+| **Broker**     | Redis                               | Message broker e result backend do Celery      |
+| **Validação**  | Pydantic v2 + pydantic-settings     | Schemas e configuração via variáveis de ambiente |
+| **Logging**    | python-json-logger + RotatingFileHandler | Logs estruturados em JSON com rotação       |
+| **Testes**     | Pytest + HTTPX                      | Testes de integração e cliente HTTP assíncrono |
+
+---
+
+## 🔐 Segurança
+
+A aplicação foi construída com referências às diretrizes **OWASP** e **NIST**:
+
+| Camada                    | Medida Aplicada                                                                 |
+|---------------------------|---------------------------------------------------------------------------------|
+| **Cabeçalhos HTTP**       | `CSP`, `X-Frame-Options: DENY`, `X-Content-Type-Options`, `HSTS`, `Referrer-Policy`, `Permissions-Policy` |
+| **Upload de Arquivo**     | Validação de extensão (whitelist), verificação de tamanho (limite 1 GB), sanitização de nome (`os.path.basename`) contra Path Traversal |
+| **Identificadores**       | UUIDs aleatórios como nome de arquivo — impede colisão e enumeração            |
+| **Download**              | Validação estrita do `job_id` (alfanumérico + hífen) contra Directory Traversal |
+| **Injeção de Comando**    | FFmpeg executado via `subprocess` com lista de argumentos — nunca via shell string |
+| **API Docs**              | OpenAPI/Swagger/ReDoc desativados em modo produção (`DEBUG=False`)              |
+| **Limpeza de Disco**      | Arquivos temporários (vídeo + áudio) removidos após processamento (NIST ISMS)  |
+| **Variáveis Sensíveis**   | Configuração via `.env` (nunca versionado) com `.env.example` como referência  |
+| **CORS**                  | Configurável via ambiente; restrito a métodos necessários (`GET`, `POST`, `OPTIONS`) |
+
+---
+
+## 🚀 Como Executar Localmente
+
+### Pré-requisitos
+
+- Python 3.10+
+- [Redis](https://redis.io/) rodando em `localhost:6379`
+- [FFmpeg](https://ffmpeg.org/) instalado e disponível no `PATH`
+
+### Instalação
+
+```bash
+# Clone o repositório
+git clone https://github.com/seu-usuario/legenda_app.git
+cd legenda_app
+
+# Crie e ative o ambiente virtual
 python -m venv venv
-.\venv\Scripts\activate
-```
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-Instale os artefatos restritos:
-```powershell
+# Instale as dependências
 pip install -r requirements.txt
+
+# Configure as variáveis de ambiente
+cp .env.example .env
+```
+
+### Inicialização dos Serviços
+
+```bash
+# 1. Backend FastAPI
+uvicorn app.main:app --port 8000
+
+# 2. Worker Celery (em outro terminal)
+python -m celery -A app.workers.celery_worker worker --pool=solo --loglevel=info
+
+# 3. Frontend Streamlit (em outro terminal)
+streamlit run frontend/frontend_app.py
+```
+
+Acesse: **http://localhost:8501**
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+legenda_app/
+├── app/
+│   ├── api/            # Endpoints REST (upload, status, download)
+│   ├── core/           # Configurações e logger estruturado
+│   ├── schemas/        # Modelos Pydantic de request/response
+│   ├── security/       # Middleware de headers e validação de upload
+│   ├── services/       # Lógica de negócio (áudio + transcrição)
+│   └── workers/        # Celery app e tasks assíncronas
+├── frontend/           # Interface Streamlit
+├── tests/              # Testes automatizados
+├── .env.example        # Template de variáveis de ambiente
+├── requirements.txt    # Dependências do projeto
+└── README.md
 ```
 
 ---
 
-## 🚦 Executando o Projeto
+## 📄 Sobre o Formato SRT Gerado
 
-O sistema opera de forma dual. Um terminal pra API, outro pro Worker.
+O arquivo `.srt` gerado segue o padrão universal de legendas e é compatível com qualquer editor de vídeo moderno. O modo **palavra por palavra** posiciona cada palavra individualmente com seu timestamp exato — perfeito para criação de legendas dinâmicas em formato Reels/Shorts.
 
-### 1. Inicie a API (Terminal 1)
-Estando com o ambiente virtual ativado na pasta raiz:
-```powershell
-uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
-> O frontend ficará ativo em `http://localhost:8000/`. Acesse pelo navegador e aproveite a interface para Drop and Upload de vídeos assíncronos.
+1
+00:00:01,280 --> 00:00:01,520
+Olá
 
-### 2. Inicie o Worker Celery (Terminal 2)
-Ative a venv neste segundo terminal. No windows use `--pool=solo` devido à limitação nativa com sockets unix em threads Python e o celery core:
-```powershell
-python -m celery -A app.workers.celery_worker worker --pool=solo -l info
+2
+00:00:01,520 --> 00:00:01,840
+mundo
 ```
 
 ---
 
-## 🧩 Testes e Auditorias
-Execute os testes nativos para auditar as regras de segurança básicas e validação do fluxo:
-```powershell
-pytest tests/
-```
+## 📜 Licença
 
-## 🧠 Extensão e Escalabilidade SaaS
-Se houver a premissa de transição para microserviços (SaaS global), basta destacar a pasta `/app/workers/` para um Pod independente via k8s, rodando o Celery num hardware GPU intensivo. A API rest se mantém em containers HTTP simples e comunicará o fluxo exclusivamente via Redis Message broker. Restrito e limpo!
+Distribuído sob a licença [MIT](LICENSE).
