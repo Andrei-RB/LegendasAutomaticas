@@ -210,31 +210,14 @@ def main():
                     if dl_response.status_code == 200:
                         srt_bytes = dl_response.content
                         st.success("🎉 O arquivo de legenda (.srt) está pronto!")
-                        
-                        if st.button("📁 Escolher Pasta e Salvar Legenda (.srt)", type="primary", use_container_width=True):
-                            import tkinter as tk
-                            from tkinter import filedialog
-                            
-                            try:
-                                root = tk.Tk()
-                                root.withdraw()
-                                root.wm_attributes('-topmost', 1)
-                                
-                                file_path = filedialog.asksaveasfilename(
-                                    initialfile=f"{st.session_state.original_filename}.srt",
-                                    defaultextension=".srt",
-                                    filetypes=[("Legendas SRT", "*.srt"), ("Todos os Arquivos", "*.*")]
-                                )
-                                root.destroy()
-                                
-                                if file_path:
-                                    with open(file_path, "wb") as f:
-                                        f.write(srt_bytes)
-                                    st.success(f"✅ Arquivo salvo com sucesso em: {file_path}")
-                                else:
-                                    st.warning("⚠️ Salvamento cancelado.")
-                            except Exception as e:
-                                st.error(f"❌ Erro ao abrir janela de seleção: {str(e)}")
+                        st.download_button(
+                            label="📁 Baixar Legenda (.srt)",
+                            data=srt_bytes,
+                            file_name=f"{st.session_state.original_filename}.srt",
+                            mime="text/plain",
+                            type="primary",
+                            use_container_width=True
+                        )
                                 
                     elif dl_response.status_code == 404:
                         st.error("❌ Arquivo não encontrado no servidor.")

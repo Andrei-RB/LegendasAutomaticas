@@ -1,0 +1,65 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: legenda_redis
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  api:
+    build: .
+    container_name: legenda_api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      - APP_ENV=production
+      - REDIS_URL=redis://redis:6379/0
+      - UPLOAD_DIR=uploads
+      - OUTPUT_DIR=outputs
+      - LOG_DIR=logs
+    volumes:
+      - ./uploads:/app/uploads
+      - ./outputs:/app/outputs
+      - ./logs:/app/logs
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  worker:
+    build: .
+    container_name: legenda_worker
+    # No Docker no Windows, --pool=solo pode não ser mais necessário por estarmos no Linux (Container),
+    # mas mantemos por segurança, ou deixamos o default do Linux rodar.
+    # O Celery no Linux roda perfeitamente sem o pool solo, então vamos usar o padrão para mais desempenho.
+    command: celery -A app.workers.celery_worker worker --loglevel=info
+    environment:
+      - APP_ENV=production
+      - REDIS_URL=redis://redis:6379/0
+      - UPLOAD_DIR=uploads
+      - OUTPUT_DIR=outputs
+      - LOG_DIR=logs
+    volumes:
+      - ./uploads:/app/uploads
+      - ./outputs:/app/outputs
+      - ./logs:/app/logs
+    depends_on:
+      - redis
+      - api
+    restart: unless-stopped
+
+  frontend:
+    build: .
+    container_name: legenda_frontend
+    command: streamlit run frontend/frontend_app.py --server.port 8501 --server.address 0.0.0.0
+    ports:
+      - "127.0.0.1:8501:8501"
+    environment:
+      # URL acessível a partir do Streamlit Backend para a API (comunicação server-to-server na rede interna)
+      - BACKEND_URL=http://api:8000/api/v1
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  redis_data:
