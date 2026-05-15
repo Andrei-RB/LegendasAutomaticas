@@ -32,8 +32,8 @@ O processamento é feito de forma **assíncrona e não bloqueante**: o vídeo é
 └─────────────────┘               │  /api/v1/status/{job_id}         │
                                   │  /api/v1/download/{job_id}       │
                                   └───────────────┬──────────────────┘
-                                                 │ Enfileira Task
-                                                 ▼
+                                                  │ Enfileira Task
+                                                  ▼
                                  ┌──────────────────────────────────┐
                                  │  Celery Worker                   │
                                  │  ├── FFmpeg → extrai áudio (WAV) │
