@@ -7,42 +7,41 @@ from app.core.logger import logger
 from celery.exceptions import SoftTimeLimitExceeded, Ignore
 
 @celery_app.task(bind=True, name="process_video_task", soft_time_limit=3600, time_limit=3660)
-def process_video_task(self, video_path: str, job_id: str):
-    logger.info(f"[{job_id}] INICIO TASK - path: {video_path}")
-    self.update_state(state='PROCESSING', meta={'progress': 5, 'status': 'Iniciando extração de áudio...'})
+def process_video_task(self, caminho_video: str, identificador_trabalho: str):
+    logger.info(f"[{identificador_trabalho}] INÍCIO DA TAREFA DE PROCESSAMENTO ESTRITO - caminho: {caminho_video}")
+    self.update_state(state='PROCESSING', meta={'progress': 5, 'status': 'Iniciando extração do canal de áudio...'})
     
+    caminho_audio = None
     try:
-        # 1. Extração de áudio
-        audio_path = extract_audio(video_path, job_id)
-        self.update_state(state='PROCESSING', meta={'progress': 20, 'status': 'Áudio extraído. Carregando modelo IA...'})
+        # Extração de fluxo de áudio seguro
+        caminho_audio = extract_audio(caminho_video, identificador_trabalho)
+        self.update_state(state='PROCESSING', meta={'progress': 20, 'status': 'Mídia extraída. Inicializando processamento neural IA...'})
         
-        # 2. Transcrição assíncrona (com progresso via stream updates internamente)
-        srt_path = transcribe_and_generate_srt(audio_path, job_id, self)
+        # Transcrição algorítmica
+        caminho_srt = transcribe_and_generate_srt(caminho_audio, identificador_trabalho, self)
         
         self.update_state(state='SUCCESS', meta={
             'progress': 100, 
-            'status': 'Legenda gerada com sucesso!',
-            'result_url': f"/api/v1/download/{job_id}"
+            'status': 'Algoritmo concluído e legendagem gerada e assinada com sucesso!',
+            'result_url': f"/api/v1/download/{identificador_trabalho}"
         })
         
-        # Limpeza do ambiente (remoção segura de temps para evitar disk bloat NIST)
-        if os.path.exists(audio_path):
-            os.remove(audio_path)
-        if os.path.exists(video_path):
-            os.remove(video_path)
-            
-        logger.info(f"[{job_id}] JOB PROCESSADO COM SUCESSO. ")
-        
-        return {'status': 'Completed', 'result_url': f"/api/v1/download/{job_id}"}
+        logger.info(f"[{identificador_trabalho}] TRABALHO PROCESSADO COM EFICÁCIA.")
+        return {'status': 'Concluído', 'result_url': f"/api/v1/download/{identificador_trabalho}"}
         
     except SoftTimeLimitExceeded:
-        logger.error(f"[{job_id}] Timeout excedido na task de IA.")
-        if os.path.exists(video_path): os.remove(video_path)
-        self.update_state(state='FAILURE', meta={'progress': 0, 'status': 'Erro: Tempo limite excedido.'})
+        logger.error(f"[{identificador_trabalho}] Limite temporal de processamento IA estourado (Timeout).")
+        self.update_state(state='FAILURE', meta={'progress': 0, 'status': 'Falha Técnica: Execução prolongada encerrada por segurança.'})
         raise Ignore()
-    except Exception as e:
-        logger.error(f"[{job_id}] ERRO: {str(e)}")
-        # Cleanup
-        if os.path.exists(video_path): os.remove(video_path)
-        self.update_state(state='FAILURE', meta={'progress': 0, 'status': f'Erro: {str(e)}'})
+    except Exception as erro_excecao:
+        logger.error(f"[{identificador_trabalho}] ERRO CRÍTICO NA EXECUÇÃO: {str(erro_excecao)}")
+        self.update_state(state='FAILURE', meta={'progress': 0, 'status': f'Falha Crítica: {str(erro_excecao)}'})
         raise Ignore()
+    finally:
+        # MITIGAÇÃO DE ARMAZENAMENTO (GARANTIA DE LIMPEZA DE ESTADO / ZERO TRACE)
+        for arquivo_temporario in [caminho_audio, caminho_video]:
+            if arquivo_temporario and os.path.exists(arquivo_temporario):
+                try:
+                    os.remove(arquivo_temporario)
+                except OSError as falha_sistema:
+                    logger.error(f"[{identificador_trabalho}] Falha arquitetural ao tentar remover rastro temporário em {arquivo_temporario}: {falha_sistema}")

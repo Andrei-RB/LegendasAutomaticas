@@ -14,6 +14,12 @@ MAX_UPLOAD_SIZE = 1 * 1024 * 1024 * 1024  # 1GB em bytes
 ALLOWED_EXTENSIONS = {".mp4", ".avi", ".mov", ".mkv"}
 ALLOWED_MIME_TYPES = {"video/mp4", "video/x-msvideo", "video/quicktime", "video/x-matroska"}
 
+# Timeouts calibrados para operações de vídeo de grande porte (até 1GB)
+UPLOAD_TIMEOUT = 300      # 5 min para upload de vídeos grandes
+STATUS_TIMEOUT = 10       # 10s para polling de status
+DOWNLOAD_TIMEOUT = 60     # 1 min para download de SRT
+HEALTH_TIMEOUT = 5        # 5s para verificação de saúde
+
 # Configuração da Página Streamlit
 st.set_page_config(
     page_title="Gerador de Legendas Seguro",
@@ -49,6 +55,32 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+def check_backend_health() -> bool:
+    """Verifica se o backend está acessível com retry e backoff exponencial."""
+    # Derivar URL de saúde a partir da URL da API (removendo /api/v1)
+    base_url = BACKEND_URL.rsplit("/api/v1", 1)[0]
+    health_url = f"{base_url}/health"
+
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(health_url, timeout=HEALTH_TIMEOUT)
+            if response.status_code == 200:
+                logger.info(f"Backend acessível (tentativa {attempt + 1}).")
+                return True
+        except requests.exceptions.ConnectionError:
+            wait_time = min(2 ** attempt, 16)  # backoff: 1s, 2s, 4s, 8s, 16s
+            logger.warning(f"Backend indisponível, tentativa {attempt + 1}/{max_retries}. Retry em {wait_time}s...")
+            time.sleep(wait_time)
+        except requests.exceptions.Timeout:
+            logger.warning(f"Timeout ao verificar saúde do backend (tentativa {attempt + 1}).")
+            time.sleep(1)
+        except Exception as e:
+            logger.error(f"Erro inesperado ao verificar saúde: {str(e)}")
+            break
+    
+    return False
+
 def validate_client_side(file) -> bool:
     """Realiza validação de segurança no client-side antes do envio."""
     if file is None:
@@ -81,7 +113,7 @@ def upload_video(file):
     files = {"file": (file.name, file, file.type)}
     
     try:
-        response = requests.post(url, files=files, timeout=30)
+        response = requests.post(url, files=files, timeout=UPLOAD_TIMEOUT)
         
         # Tratamento seguro de erros HTTP
         if response.status_code == 413:
@@ -104,7 +136,7 @@ def upload_video(file):
         return data.get("job_id")
         
     except requests.exceptions.Timeout:
-        st.error("⏱️ Tempo limite de conexão excedido ao enviar o vídeo.")
+        st.error("⏱️ Tempo limite de conexão excedido ao enviar o vídeo. Para vídeos muito grandes, isso pode acontecer em conexões lentas.")
         logger.error("Timeout ao realizar upload.")
         return None
     except requests.exceptions.ConnectionError:
@@ -119,6 +151,21 @@ def upload_video(file):
 def main():
     st.markdown("<h1>🎬 Extração Automática de Legendas</h1>", unsafe_allow_html=True)
     st.markdown("<p class='upload-text'>Faça upload do seu vídeo e o sistema gerará as legendas (SRT) utilizando Inteligência Artificial de ponta.</p>", unsafe_allow_html=True)
+
+    # Verificação de saúde do backend com feedback visual
+    if "backend_online" not in st.session_state:
+        st.session_state.backend_online = None
+
+    if st.session_state.backend_online is None:
+        with st.spinner("Conectando ao servidor de processamento..."):
+            st.session_state.backend_online = check_backend_health()
+    
+    if not st.session_state.backend_online:
+        st.error("🔌 **Servidor de processamento indisponível.** Verifique se o backend está em execução e tente recarregar a página.")
+        if st.button("🔄 Tentar Reconectar", type="primary", use_container_width=True):
+            st.session_state.backend_online = None
+            st.rerun()
+        return
 
     # Inicializa estado da sessão se não existir
     if "job_id" not in st.session_state:
@@ -160,7 +207,7 @@ def main():
         # Long Polling Loop
         while st.session_state.status not in ["SUCCESS", "FAILURE"]:
             try:
-                response = requests.get(url, timeout=10)
+                response = requests.get(url, timeout=STATUS_TIMEOUT)
                 
                 if response.status_code == 200:
                     data = response.json()
@@ -205,7 +252,7 @@ def main():
             try:
                 with st.spinner("Preparando arquivo para download..."):
                     # Fazemos a requisição para pegar os bytes do arquivo para o botão de download do Streamlit
-                    dl_response = requests.get(download_url, timeout=15)
+                    dl_response = requests.get(download_url, timeout=DOWNLOAD_TIMEOUT)
                     
                     if dl_response.status_code == 200:
                         srt_bytes = dl_response.content
@@ -231,6 +278,7 @@ def main():
             st.session_state.job_id = None
             st.session_state.status = None
             st.session_state.original_filename = "legenda"
+            st.session_state.backend_online = None
             st.rerun()
 
 if __name__ == "__main__":

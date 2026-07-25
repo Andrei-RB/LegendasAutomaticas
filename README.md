@@ -42,11 +42,11 @@ O projeto segue o padrão **SOA-Ready Modular Monolith**, projetado para escalar
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         Docker Network                              │
 │                                                                     │
-│  ┌──────────────┐    HTTP     ┌──────────────┐   Enqueue   ┌──────┐│
-│  │  Streamlit   │ ──────────► │   FastAPI    │ ──────────► │Redis ││
-│  │  (Frontend)  │             │  (REST API)  │             │Queue ││
-│  │  Port 8501   │ ◄────────── │  Port 8000   │ ◄────────── │:6379 ││
-│  └──────────────┘  Polling    └──────────────┘   Results   └──────┘│
+│  ┌──────────────┐    HTTP     ┌──────────────┐   Enqueue   ┌──────┐ │
+│  │  Streamlit   │ ──────────► │   FastAPI    │ ──────────► │Redis │ │
+│  │  (Frontend)  │             │  (REST API)  │             │Queue │ │
+│  │  Port 8501   │ ◄────────── │  Port 8000   │ ◄────────── │:6379 │ │
+│  └──────────────┘  Polling    └──────────────┘   Results   └──────┘ │
 │                                                               ▲     │
 │                                                               │Poll │
 │                                                    ┌──────────┴──┐  │

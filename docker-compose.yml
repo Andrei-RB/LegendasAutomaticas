@@ -2,8 +2,18 @@ services:
   redis:
     image: redis:7-alpine
     container_name: legenda_redis
+    # PROTEÇÃO: Requer autenticação do Redis
+    command: redis-server --requirepass ${SENHA_REDIS:-ChaveSegura_2026_OWASP}
     volumes:
       - redis_data:/data
+    networks:
+      - legenda_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${SENHA_REDIS:-ChaveSegura_2026_OWASP}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
     restart: unless-stopped
 
   api:
@@ -14,28 +24,36 @@ services:
       - "127.0.0.1:8000:8000"
     environment:
       - APP_ENV=production
-      - REDIS_URL=redis://redis:6379/0
+      # URL Segura do Redis com senha
+      - REDIS_URL=redis://:${SENHA_REDIS:-ChaveSegura_2026_OWASP}@redis:6379/0
       - UPLOAD_DIR=uploads
       - OUTPUT_DIR=outputs
       - LOG_DIR=logs
+      - CORS_ORIGINS=${CORS_ORIGINS:-}
     volumes:
       - ./uploads:/app/uploads
       - ./outputs:/app/outputs
       - ./logs:/app/logs
+    networks:
+      - legenda_net
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     restart: unless-stopped
 
   worker:
     build: .
     container_name: legenda_worker
-    # No Docker no Windows, --pool=solo pode não ser mais necessário por estarmos no Linux (Container),
-    # mas mantemos por segurança, ou deixamos o default do Linux rodar.
-    # O Celery no Linux roda perfeitamente sem o pool solo, então vamos usar o padrão para mais desempenho.
-    command: celery -A app.workers.celery_worker worker --loglevel=info
+    command: celery -A app.workers.celery_worker worker --loglevel=info --concurrency=1
     environment:
       - APP_ENV=production
-      - REDIS_URL=redis://redis:6379/0
+      - REDIS_URL=redis://:${SENHA_REDIS:-ChaveSegura_2026_OWASP}@redis:6379/0
       - UPLOAD_DIR=uploads
       - OUTPUT_DIR=outputs
       - LOG_DIR=logs
@@ -43,9 +61,19 @@ services:
       - ./uploads:/app/uploads
       - ./outputs:/app/outputs
       - ./logs:/app/logs
+    networks:
+      - legenda_net
     depends_on:
-      - redis
-      - api
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 512M
     restart: unless-stopped
 
   frontend:
@@ -55,11 +83,18 @@ services:
     ports:
       - "127.0.0.1:8501:8501"
     environment:
-      # URL acessível a partir do Streamlit Backend para a API (comunicação server-to-server na rede interna)
       - BACKEND_URL=http://api:8000/api/v1
+    networks:
+      - legenda_net
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     restart: unless-stopped
+
+networks:
+  legenda_net:
+    driver: bridge
+    name: legenda_net
 
 volumes:
   redis_data:

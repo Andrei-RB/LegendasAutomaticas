@@ -14,6 +14,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# CRIAR USUÁRIO NÃO-ROOT PARA SEGURANÇA CONTRA ESCALONAMENTO DE PRIVILÉGIO (NIST)
+RUN groupadd -r aplicacao && useradd -m -r -g aplicacao -s /bin/false usuario_app
+
 # Copiar os requerimentos e instalar dependências Python
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir --upgrade pip && \
@@ -22,5 +25,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copiar o código fonte do projeto
 COPY . /app/
 
-# O container pode servir como múltiplos serviços (API, Worker, Frontend)
-# O comando de execução (CMD) será especificado no docker-compose.yml
+# Alterar a posse de todos os arquivos para o usuário seguro
+RUN chown -R usuario_app:aplicacao /app && chmod -R 755 /app
+
+# Ativar execução com usuário restrito
+USER usuario_app

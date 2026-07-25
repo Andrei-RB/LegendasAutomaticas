@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE: int = 1024 * 1024 * 1024  # default 1 GB
     ALLOWED_EXTENSIONS: str = ".mp4,.avi,.mov,.mkv"
 
+    # CORS (origens adicionais separadas por vírgula, ex: "https://meudominio.com,https://app.meudominio.com")
+    CORS_ORIGINS: str = ""
+
     @property
     def allowed_extensions_list(self) -> List[str]:
         return [ext.strip() for ext in self.ALLOWED_EXTENSIONS.split(",")]
