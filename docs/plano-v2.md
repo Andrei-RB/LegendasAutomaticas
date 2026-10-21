@@ -310,7 +310,7 @@ Fluxo de cada chamada:
 **Vai para o backlog:** remoção de silêncios e vícios de fala com remapeamento, redução de ruído, música e zoom, tradução e thumbnail. O `loudnorm` continua no render.
 **Descartado:** wizard em Streamlit, correção do launcher e o SRT com um bloco por palavra.
 
-**Formato das Sprints em `docs/sprints/`:** as tarefas terão objetivo, checklist e critério de aceite, sem textos longos (D23). O script `scripts/criar_issues_github.py` continua valendo.
+**Formato das Sprints em `docs/sprints/`:** as tarefas terão objetivo, checklist e critério de aceite, sem textos longos (D23). O script `scripts/sincronizar_github.py` (Action) cria e organiza tudo.
 
 ## Riscos (inclui os do sistema de legendas)
 
@@ -440,6 +440,6 @@ Testes: **Vitest** + Testing Library (componentes e lógica de blocos) e **Playw
    - `00-roadmap.md`: visão, arquitetura, decisões D1–D40 e F1–F10;
    - `sprint-0.md` até `sprint-7.md`, incluindo S5a e S5b. Cada tarefa tem objetivo, checklist e critério de aceite;
    - `backlog.md`.
-2. Ajustar `scripts/criar_issues_github.py` se o formato mudar (os marcadores `<!-- epic/issue -->` continuam).
+2. Sincronização via `scripts/sincronizar_github.py` (Action).
 3. Rodar `--dry-run`, fazer o commit no branch `claude/happy-franklin-cswtxh` e tentar o push. Se der 403 de novo, avisar.
 4. Se o acesso ao GitHub voltar, criar as issues.

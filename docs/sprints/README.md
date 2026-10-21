@@ -16,12 +16,12 @@ Roadmap v2. O plano completo está em [`../plano-v2.md`](../plano-v2.md).
 | [sprint-7.md](sprint-7.md) | S7 Endurecimento |
 | [sprint-9-backlog.md](sprint-9-backlog.md) | Backlog |
 
-## Criar as issues no GitHub
+## GitHub (issues, milestones e labels)
 
-```bash
-gh auth login
-python scripts/criar_issues_github.py --dry-run   # confere
-python scripts/criar_issues_github.py             # cria Roadmap → Épicos → Tarefas
-```
+A Action `.github/workflows/sincronizar-github.yml` lê estes arquivos e sincroniza o GitHub sozinha a cada push que altera `docs/sprints/`. Ela pode ser rodada várias vezes sem duplicar nada.
 
-Cria 74 issues (1 roadmap, 10 épicos e 63 tarefas). Pode rodar de novo sem duplicar.
+- Cada épico vira um **milestone**, e suas tarefas entram nele.
+- Rodar manualmente: aba **Actions → Sincronizar GitHub com as Sprints → Run workflow**.
+- Rodar localmente: `GITHUB_TOKEN=... python scripts/sincronizar_github.py --repo Andrei-RB/LegendasAutomaticas` (use `--dry-run` para conferir antes).
+
+Marcadores nos arquivos: `<!-- epic: Título | labels: ... -->` e `<!-- issue: Título | labels: ... -->`. Não mude o título de uma issue que já existe, porque a sincronização encontra as issues pelo título.

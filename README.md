@@ -1,5 +1,7 @@
 # 🎬 LegendasAutomáticas
 
+> 🚧 **v2 em construção:** o projeto está evoluindo para um estúdio de cortes virais com legendas e textos de postagem. Veja o [roadmap](docs/sprints/00-roadmap.md) e o [plano](docs/plano-v2.md). O conteúdo abaixo descreve a v1 atual.
+
 > Pipeline assíncrono com IA para geração automática de arquivos de legenda **SRT** a partir de vídeos — pensado para criadores de conteúdo, editores de vídeo e produtoras.
 
 ---
