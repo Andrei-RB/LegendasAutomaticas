@@ -54,3 +54,10 @@ celerybeat.pid
 # Outros
 *.sqlite3
 db.sqlite3
+
+# v2: dados, modelos e builds
+dados/
+modelos_ia/
+node_modules/
+dist/
+.claude/settings.local.json

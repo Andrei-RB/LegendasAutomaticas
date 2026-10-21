@@ -1,0 +1,30 @@
+name: Sincronizar GitHub com as Sprints
+
+# Cria labels, milestones e issues a partir de docs/sprints/ (idempotente).
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "docs/sprints/**"
+      - "scripts/sincronizar_github.py"
+      - ".github/workflows/sincronizar-github.yml"
+
+permissions:
+  issues: write
+  contents: read
+
+concurrency:
+  group: sincronizar-github
+  cancel-in-progress: false
+
+jobs:
+  sincronizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python scripts/sincronizar_github.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
