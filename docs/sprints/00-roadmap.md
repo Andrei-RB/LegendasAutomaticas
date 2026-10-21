@@ -1,50 +1,67 @@
-<!-- roadmap: 🗺️ Roadmap: de gerador de legendas para editor de vídeo com IA | labels: roadmap -->
-## 🎯 Objetivo
+<!-- roadmap: 🗺️ Roadmap v2: cortes virais verificados + legendas com modelos + textos de postagem | labels: roadmap -->
+## Objetivo
 
-Evoluir o **LegendasAutomáticas** de um gerador simples de `.srt` para um **editor de vídeo com IA**, capaz de:
+Transformar o projeto num estúdio local (Docker) que:
+1. recebe um vídeo longo (upload ou link);
+2. encontra **cortes virais verificados**, com duração 15/30/60/90 s e quantidade escolhidas;
+3. gera **legendas corrigidas com modelos virais** (cores por significado, emojis, animações);
+4. exporta **MP4 9:16** e **SRT para o CapCut**;
+5. escreve os **textos de postagem** (TikTok, Shorts, Reels, YouTube).
 
-- Gerar legendas **muito mais precisas** (menos palavras erradas);
-- Entregar legendas **estilizadas** (emojis, destaques, temas tipo "Hormozi", karaokê);
-- **Editar o vídeo automaticamente**: remover silêncios e vícios de fala, melhorar o áudio, converter para vertical;
-- Usar **IA avançada (Gemini)** para revisar o texto, sugerir cortes virais, títulos, hashtags e traduções.
+Tudo gratuito sempre que possível, com Qwen (local), Gemini (nível gratuito) e Claude (assinatura).
 
-## 🧱 Arquitetura alvo
+## Princípio central
+
+**A IA nunca inventa tempo.** Os tempos vêm de sinais medidos localmente. A IA só escolhe IDs, avalia e escreve.
+
+## Arquitetura
 
 ```
-Streamlit (opções do usuário)
-        │  POST /upload-video  (arquivo + options JSON)
-        ▼
-FastAPI ──► Redis ──► Celery Worker (pipeline em etapas)
-                         1. FFmpeg: extrai áudio (WAV 16kHz mono)
-                         2. Whisper: transcrição com tempo por palavra ──► transcript.json (fonte única da verdade)
-                         3. Gemini: revisão + emojis + destaques (opcional)
-                         4. Cortes: silêncios / vícios de fala (opcional) + remapeamento dos tempos
-                         5. Áudio: ruído / loudness / música (opcional)
-                         6. Geradores: .srt / .ass / vídeo final com legenda gravada
-                         7. IA extra: cortes virais, título, hashtags, tradução (opcional)
+React (Vite) ──► FastAPI ──► Redis/Celery ──► workers: gpu | cpu | ai | render(Remotion)
+                    │                              │
+                PostgreSQL                    Ollama (Qwen/Gemma)
 ```
 
-**Princípio central:** tudo passa por um `transcript.json` (palavras + tempos + metadados). Todos os geradores (SRT, ASS, cortes, tradução) leem dele. Isso evita retrabalho e permite editar a legenda antes de exportar.
+**Funil dos cortes:**
+1. Sinais locais: transcrição, risadas, entonação, cenas, rostos, quem fala.
+2. Candidatos alinhados a frases.
+3. Triagem (Qwen).
+4. Juiz que assiste ao vídeo (Gemini, ou Gemma como reserva).
+5. Editor-chefe (Claude).
+6. Consenso de 2 juízes + validadores de código.
+7. Revisão humana.
 
-## 📅 Sprints
+## Decisões principais
 
-| Sprint | Tema | Resultado visível para o usuário |
-|---|---|---|
-| **0** | Fundação e correções | App estável, sem bugs conhecidos, com testes e CI, pronto para receber opções |
-| **1** | Precisão da transcrição | Legendas com muito menos erros e blocos de 2–3 palavras |
-| **2** | Integração com Gemini | Legenda revisada por IA, com emojis 🔥 e palavras-chave em destaque |
-| **3** | Modelos de legenda (.ass) | Temas prontos + download do vídeo com a legenda já gravada |
-| **4** | Editor: cortes inteligentes | Remoção automática de silêncios e vícios de fala |
-| **5** | Áudio e formato | Áudio limpo, volume padrão das redes, música com ducking, vertical 9:16, zoom |
-| **6** | IA avançada | Cortes virais, título/descrição/hashtags, capítulos, tradução, thumbnail |
-| **7** | Interface e infraestrutura | Editor de legenda no navegador, histórico, Docker Compose |
+| Tema | Decisão |
+|---|---|
+| Interface | React + TypeScript, tema escuro, desktop primeiro |
+| IA | Qwen local · Gemini só no nível gratuito · Claude pela assinatura (`claude -p`) com teto diário, API opcional |
+| Infra | Windows + Docker Desktop (WSL2) com GPU · PostgreSQL · Ollama em container |
+| Cortes | 15/30/60/90 s ±20%, frase completa, 9:16 seguindo o rosto, 4 perfis de conteúdo |
+| Legendas | 4 modos, 8 modelos, editor visual, Remotion (prévia = vídeo final) |
+| Idioma | Tudo em PT-BR (código e docs). Docs curtas |
 
-Cada Sprint é um **Épico** (issue com label `epic`) e as tarefas dela aparecem como **sub-issues**. Ordem recomendada: 0 → 1 → 2 → 3 → 4. Depois da 4, as Sprints 5, 6 e 7 podem ser feitas em qualquer ordem.
+O plano completo, com as decisões D1–D40 e F1–F10, está em `docs/plano-v2.md`.
 
-## 🏷️ Convenções
+## Sprints
 
-- Labels: `sprint-N`, `epic`, `bug`, `enhancement`, `ia`, `legendas`, `editor`, `audio`, `frontend`, `infra`, `testes`, `docs`.
-- Cada tarefa tem: **Contexto → O que fazer → Arquivos afetados → Exemplo de código → Critérios de aceite → Como testar → Dependências**.
-- Um branch/PR por tarefa (ex.: `feat/s1-modelo-configuravel`), com `Closes #N` na descrição do PR.
-- Toda feature nova deve ser **opcional** (ligada/desligada por uma opção do job) e ter pelo menos um teste automatizado.
-- Nenhuma chave de API no código: tudo via `.env` (que nunca vai para o Git).
+| Sprint | Entrega |
+|---|---|
+| S0 | Fundação: monorepo, Docker com GPU, banco, login, CI |
+| S1 | Fatia vertical: vídeo → cortes → legenda → MP4 + SRT |
+| S2 | Sinais ricos e perfis + conjunto de ouro |
+| S3 | Roteador de IA, juízes e consenso |
+| S4 | Câmera virtual (seguir o rosto e quem fala) |
+| S5a | Legendas: precisão e inteligência |
+| S5b | Legendas: modelos virais e editor |
+| S6 | Postagens, link do YouTube, re-gerar cortes |
+| S7 | Endurecimento, aprendizado e primeiro uso |
+| Backlog | Ideias para depois |
+
+## Convenções
+
+- Uma tarefa por PR, com `Closes #N`.
+- Toda feature tem teste.
+- Nenhum segredo no código.
+- Labels: `sprint-N`, `epic`, `backend`, `frontend`, `ia`, `legendas`, `cortes`, `render`, `infra`, `testes`, `docs`.

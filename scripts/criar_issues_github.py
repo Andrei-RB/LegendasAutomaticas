@@ -44,6 +44,10 @@ LABEL_COLORS = {
     "infra": "bfd4f2",
     "testes": "d4c5f9",
     "docs": "0075ca",
+    "backend": "5319e7",
+    "cortes": "e99695",
+    "render": "c2e0c6",
+    "backlog": "cccccc",
 }
 
 
