@@ -1,18 +1,6 @@
 #!/usr/bin/env python3
-"""
-Sincroniza o GitHub com docs/sprints/ (fonte única da verdade).
-
-Faz, de forma idempotente (pode rodar quantas vezes quiser):
-  1. cria as labels usadas nos arquivos;
-  2. cria um milestone por Sprint (título do épico, sem emoji);
-  3. cria as issues que faltam (Roadmap → Épicos → Tarefas, ligadas como sub-issues);
-  4. aplica labels e milestone nas issues que já existem (busca pelo título).
-
-Uso:
-    GITHUB_TOKEN=... python scripts/sincronizar_github.py [--repo dono/repo] [--dry-run]
-
-Na GitHub Action, GITHUB_TOKEN e GITHUB_REPOSITORY já vêm do ambiente.
-"""
+"""Sincroniza issues, labels e milestones do GitHub com docs/sprints/ (idempotente).
+Uso: GITHUB_TOKEN=... python scripts/sincronizar_github.py [--repo dono/repositorio] [--dry-run]"""
 
 import argparse
 import json

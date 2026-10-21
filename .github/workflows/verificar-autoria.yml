@@ -1,0 +1,28 @@
+name: Verificar autoria
+
+# Barreira no GitHub para a regra de autoria (hooks locais podem ser pulados).
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verificar commits
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            intervalo="${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+          elif [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            intervalo="${{ github.sha }}~1..${{ github.sha }}"
+          else
+            intervalo="${{ github.event.before }}..${{ github.sha }}"
+          fi
+          bash .githooks/verificar-intervalo.sh "$intervalo"

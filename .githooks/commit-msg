@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Bloqueia coautoria de terceiros e qualquer atribuição de IA na mensagem.
+set -u
+source "$(git rev-parse --show-toplevel)/.githooks/_comum.sh"
+if ! verificar_mensagem "$(cat "$1")"; then
+  echo "Identidade fora de .githooks/autores-permitidos ou atribuição de IA (CLAUDE.md, seção 4.1)." >&2
+  exit 1
+fi

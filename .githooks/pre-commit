@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Bloqueia commits cujo autor ou committer não esteja em .githooks/autores-permitidos.
+set -u
+source "$(git rev-parse --show-toplevel)/.githooks/_comum.sh"
+erro=0
+for papel in GIT_AUTHOR_IDENT GIT_COMMITTER_IDENT; do
+  ident="$(git var "$papel" | sed -E 's/>.*/>/')"
+  if ! identidade_permitida "$ident"; then
+    echo "✖ ${papel/_IDENT/} não autorizado: $ident" >&2
+    erro=1
+  fi
+done
+if [[ $erro -ne 0 ]]; then
+  echo "Configure user.name e user.email com uma identidade de .githooks/autores-permitidos." >&2
+  exit 1
+fi

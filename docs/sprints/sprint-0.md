@@ -4,7 +4,7 @@
 **Pronto quando:** `docker compose up` sobe todos os serviços, `nvidia-smi` funciona no `worker-gpu` e os testes passam no CI.
 
 <!-- issue: [S0] Monorepo novo (backend/ frontend/ infra/ pacotes/ render/) | labels: infra, sprint-0 -->
-**Objetivo:** reorganizar o repositório, reaproveitando o que funciona.
+**Objetivo:** reorganizar as pastas no mesmo repositório (o histórico é preservado; nada é recriado), reaproveitando o que funciona.
 
 - [ ] Criar `backend/app/{api/v1,nucleo,modelos,esquemas,pipeline,ia,midia,workers}`.
 - [ ] Mover e adaptar `security/validation.py`, `middleware.py`, `logger.py`, `audio_service.py` e a configuração do Celery.

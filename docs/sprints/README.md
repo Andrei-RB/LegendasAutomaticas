@@ -22,6 +22,6 @@ A Action `.github/workflows/sincronizar-github.yml` lê estes arquivos e sincron
 
 - Cada épico vira um **milestone**, e suas tarefas entram nele.
 - Rodar manualmente: aba **Actions → Sincronizar GitHub com as Sprints → Run workflow**.
-- Rodar localmente: `GITHUB_TOKEN=... python scripts/sincronizar_github.py --repo Andrei-RB/LegendasAutomaticas` (use `--dry-run` para conferir antes).
+- Rodar localmente: `GITHUB_TOKEN=... python scripts/sincronizar_github.py --repo <dono>/<repositorio>` (use `--dry-run` para conferir antes).
 
 Marcadores nos arquivos: `<!-- epic: Título | labels: ... -->` e `<!-- issue: Título | labels: ... -->`. Não mude o título de uma issue que já existe, porque a sincronização encontra as issues pelo título.
