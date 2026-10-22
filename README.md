@@ -1,6 +1,6 @@
 # 🎬 LegendasAutomáticas
 
-> 🚧 **v2 em construção:** o projeto está evoluindo para um estúdio de cortes virais com legendas e textos de postagem. Veja o [roadmap](docs/sprints/00-roadmap.md) e o [plano](docs/plano-v2.md). O conteúdo abaixo descreve a v1 atual.
+> 🚧 **v2 em construção:** o projeto está evoluindo para um estúdio de cortes virais com legendas e textos de postagem. Veja o [roadmap](docs/sprints/00-roadmap.md) e o [plano](docs/plano-v2.md). A reorganização em monorepo (`backend/`) está concluída; a interface web será recriada na issue #17, e o Docker Compose chega na #13. O conteúdo abaixo descreve a v1 atual.
 
 > 🔒 **Antes do primeiro commit:** rode `bash scripts/instalar_hooks.sh`. Regras de autoria em [CLAUDE.md](CLAUDE.md), seção 4.1.
 
@@ -18,7 +18,7 @@ O processamento é feito de forma **assíncrona e não bloqueante**: o vídeo é
 
 ## ✨ Funcionalidades
 
-- 📤 Upload de vídeo via interface web (Streamlit)
+- 📤 Upload de vídeo via API REST (a interface web volta com a v2)
 - 🤖 Transcrição automática com modelo **Faster-Whisper** (OpenAI Whisper otimizado)
 - 📝 Geração de legenda `.srt` **palavra por palavra** (ideal para Reels e Shorts)
 - 📊 Progresso em tempo real com polling assíncrono
@@ -31,8 +31,8 @@ O processamento é feito de forma **assíncrona e não bloqueante**: o vídeo é
 
 ```
 ┌─────────────────┐     HTTP      ┌──────────────────────────────────┐
-│  Frontend       │ ──────────►   │  FastAPI Backend (Uvicorn)       │
-│  (Streamlit)    │ ◄──────────   │  /api/v1/upload-video            │
+│  Cliente HTTP   │ ──────────►   │  FastAPI Backend (Uvicorn)       │
+│  (curl / UI v2) │ ◄──────────   │  /health  /api/v1/upload-video   │
 └─────────────────┘               │  /api/v1/status/{job_id}         │
                                   │  /api/v1/download/{job_id}       │
                                   └───────────────┬──────────────────┘
@@ -57,7 +57,6 @@ O processamento é feito de forma **assíncrona e não bloqueante**: o vídeo é
 | Camada         | Tecnologia                          | Função                                         |
 |----------------|-------------------------------------|------------------------------------------------|
 | **Backend**    | FastAPI + Uvicorn                   | API REST assíncrona e servidor ASGI            |
-| **Frontend**   | Streamlit                           | Interface web de upload e monitoramento        |
 | **IA / ML**    | Faster-Whisper (`base`, CPU/int8)   | Transcrição de fala para texto com timestamps |
 | **Áudio**      | FFmpeg                              | Extração e conversão de áudio (WAV 16kHz mono) |
 | **Filas**      | Celery                              | Processamento assíncrono em background          |
@@ -65,6 +64,7 @@ O processamento é feito de forma **assíncrona e não bloqueante**: o vídeo é
 | **Validação**  | Pydantic v2 + pydantic-settings     | Schemas e configuração via variáveis de ambiente |
 | **Logging**    | python-json-logger + RotatingFileHandler | Logs estruturados em JSON com rotação       |
 | **Testes**     | Pytest + HTTPX                      | Testes de integração e cliente HTTP assíncrono |
+| **Qualidade**  | Ruff                                | Lint e formatação                              |
 
 ---
 
@@ -90,63 +90,73 @@ A aplicação foi construída com referências às diretrizes **OWASP** e **NIST
 
 ### Pré-requisitos
 
-- Python 3.10+
+- Python 3.12
 - [Redis](https://redis.io/) rodando em `localhost:6379`
 - [FFmpeg](https://ffmpeg.org/) instalado e disponível no `PATH`
 
 ### Instalação
 
 ```bash
-# Clone o repositório
 git clone https://github.com/Andrei-RB/LegendasAutomaticas
-cd LegendasAutomaticas
+cd LegendasAutomaticas/backend
 
-# Crie e ative o ambiente virtual
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Instale as dependências
-pip install -r requirements.txt
-
-# Configure as variáveis de ambiente
-cp .env.example .env
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -r requirements-dev.txt
 ```
 
 ### Inicialização dos Serviços
 
+Execute em `backend/`:
+
 ```bash
-# 1. Redis
-wsl sudo service redis-server start
+# API
+python -m uvicorn app.main:app --port 8000
 
-# 2. Backend FastAPI
-.\venv\Scripts\python.exe -m uvicorn app.main:app --port 8000
-
-# 3. Worker Celery (em outro terminal)
-.\venv\Scripts\python.exe -m celery -A app.workers.celery_worker worker --pool=solo -l info
-
-# 4. Frontend Streamlit (em outro terminal)
-streamlit run frontend/frontend_app.py
+# Worker Celery (outro terminal)
+python -m celery -A app.workers.celery_app worker --pool=solo -l info
 ```
 
-Acesse: **http://localhost:8501**
+Verificação: `curl -s http://127.0.0.1:8000/health` retorna `{"status":"healthy"}`.
+
+### Variáveis de Ambiente
+
+Definidas em `backend/.env` (não versionado) ou no ambiente.
+
+| Variável | Padrão | Função |
+|---|---|---|
+| `DEBUG` | `false` | Habilita `/docs` e `/redoc` |
+| `REDIS_URL` | `redis://localhost:6379/0` | Broker e resultado do Celery |
+| `MAX_UPLOAD_SIZE` | `1073741824` (1 GB) | Limite de upload em bytes |
+| `ALLOWED_EXTENSIONS` | `.mp4,.avi,.mov,.mkv` | Extensões aceitas |
+| `CORS_ORIGINS` | vazio | Origens extras, separadas por vírgula |
+
+### Verificações
+
+```bash
+ruff check backend && ruff format --check backend
+pytest backend -m "not lento"
+```
 
 ---
 
 ## 📁 Estrutura do Projeto
 
 ```
-legenda_app/
-├── app/
-│   ├── api/            # Endpoints REST (upload, status, download)
-│   ├── core/           # Configurações e logger estruturado
-│   ├── schemas/        # Modelos Pydantic de request/response
-│   ├── security/       # Middleware de headers e validação de upload
-│   ├── services/       # Lógica de negócio (áudio + transcrição)
-│   └── workers/        # Celery app e tasks assíncronas
-├── frontend/           # Interface Streamlit
-├── tests/              # Testes automatizados
-├── .env.example        # Template de variáveis de ambiente
-├── requirements.txt    # Dependências do projeto
+├── backend/
+│   ├── app/
+│   │   ├── api/v1/         # Endpoints REST (upload, status, download)
+│   │   ├── nucleo/         # Configuração, logger, validação e cabeçalhos de segurança
+│   │   ├── esquemas/       # Modelos Pydantic de request/response
+│   │   ├── midia/          # FFmpeg, SRT e transcrição
+│   │   ├── workers/        # Celery app e tarefas assíncronas
+│   │   ├── modelos/ ia/ pipeline/   # Reservados para as próximas issues
+│   │   └── main.py
+│   ├── testes/             # Testes automatizados
+│   ├── pyproject.toml      # Configuração de ruff e pytest
+│   └── requirements*.txt   # Dependências
+├── frontend/ infra/ pacotes/ render/ recursos/   # Reservados (S0 e S1)
+├── docs/                   # Plano v2 e sprints
 └── README.md
 ```
 
