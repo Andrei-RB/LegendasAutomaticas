@@ -63,7 +63,9 @@ services:
   worker-cpu:
     <<: *backend
     command: ["celery", "-A", "app.workers.celery_app", "worker", "-Q", "cpu,celery", "-c", "2", "-n", "worker-cpu@%h", "--loglevel=INFO"]
-    environment: *ambiente-app
+    environment:
+      <<: *ambiente-app
+      HF_TOKEN: ${HF_TOKEN:-}
     networks: [interna, externa]
     volumes:
       - dados:/dados
@@ -88,7 +90,7 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       OLLAMA_URL: http://ollama:11434
-    networks: [interna, externa]
+    networks: [interna, externa, ia]
     volumes:
       - dados:/dados
       - claude_config:/claude-config
@@ -103,9 +105,10 @@ services:
   beat:
     <<: *backend
     command: ["celery", "-A", "app.workers.celery_app", "beat", "-s", "/tmp/celerybeat-schedule", "--pidfile", "/tmp/beat.pid", "--loglevel=INFO"]
-    environment: *ambiente-app
-    volumes:
-      - dados:/dados
+    environment:
+      <<: *ambiente-app
+      UPLOAD_DIR: /tmp/uploads
+      OUTPUT_DIR: /tmp/saidas
     mem_limit: 256m
     healthcheck:
       test: ["CMD", "python", "-c", "import os; os.kill(int(open('/tmp/beat.pid').read()), 0)"]
@@ -124,15 +127,16 @@ services:
     command: ["celery", "-A", "app.workers.celery_app", "worker", "-Q", "gpu", "-c", "1", "-n", "worker-gpu@%h", "--loglevel=INFO"]
     environment:
       <<: *ambiente-app
+      HF_TOKEN: ${HF_TOKEN:-}
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,video,utility
-    networks: [interna]
+    networks: [interna, ia]
     volumes:
       - dados:/dados
     depends_on:
       redis:
         condition: service_healthy
-    mem_limit: 3g
+    mem_limit: 2560m
     deploy:
       resources:
         reservations:
@@ -149,8 +153,11 @@ services:
 
   ollama:
     <<: *endurecimento
-    image: ollama/ollama:0.40.8
-    user: "0:0"
+    image: viraliza/ollama:dev
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile.ollama
+    user: "10001:10001"
     environment:
       HOME: /modelos
       OLLAMA_MODELS: /modelos/modelos
@@ -160,10 +167,10 @@ services:
       OLLAMA_NUM_PARALLEL: "1"
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,video,utility
-    networks: [interna, externa]
+    networks: [ia]
     volumes:
       - modelos:/modelos
-    mem_limit: 5g
+    mem_limit: 4g
     deploy:
       resources:
         reservations:
@@ -186,6 +193,9 @@ services:
     command:
       - |
         umask 077
+        case "$$REDISCLI_AUTH" in
+          *[!0-9a-f]*) echo "ERRO: SENHA_REDIS deve ser hexadecimal (openssl rand -hex 32)." >&2; exit 1 ;;
+        esac
         {
           echo "requirepass $$REDISCLI_AUTH"
           echo 'appendonly yes'
@@ -196,6 +206,8 @@ services:
           echo 'rename-command FLUSHALL ""'
           echo 'rename-command FLUSHDB ""'
           echo 'rename-command DEBUG ""'
+          echo 'rename-command CONFIG ""'
+          echo 'rename-command MODULE ""'
         } > /tmp/redis.conf
         exec redis-server /tmp/redis.conf
     environment:
@@ -267,6 +279,8 @@ services:
 
 networks:
   interna:
+    internal: true
+  ia:
     internal: true
   externa: {}
 

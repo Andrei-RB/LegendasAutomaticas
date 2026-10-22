@@ -37,7 +37,6 @@ $PY -I - "$cfg_json" <<'PYTHON' || falhas=$((falhas + 1))
 import json, sys
 cfg = json.load(open(sys.argv[1], encoding='utf-8'))
 erros = []
-RAIZ_PERMITIDO = {"ollama"}
 for nome, s in cfg["services"].items():
     if s.get("cap_drop") != ["ALL"]:
         erros.append(f"{nome}: cap_drop deve ser [ALL]")
@@ -47,13 +46,21 @@ for nome, s in cfg["services"].items():
         erros.append(f"{nome}: read_only ausente")
     if s.get("privileged"):
         erros.append(f"{nome}: privileged")
+    for chave in ("cap_add", "devices", "userns_mode"):
+        if s.get(chave):
+            erros.append(f"{nome}: {chave} não permitido")
+    for chave in ("network_mode", "pid", "ipc"):
+        if s.get(chave) == "host":
+            erros.append(f"{nome}: {chave}=host")
+    if any("unconfined" in o for o in s.get("security_opt", [])):
+        erros.append(f"{nome}: security_opt unconfined")
     if not s.get("healthcheck"):
         erros.append(f"{nome}: sem healthcheck")
     if not s.get("mem_limit") and not s.get("deploy", {}).get("resources", {}).get("limits", {}).get("memory"):
         erros.append(f"{nome}: sem limite de memória")
     if not s.get("pids_limit"):
         erros.append(f"{nome}: sem pids_limit")
-    if nome not in RAIZ_PERMITIDO and str(s.get("user", "root")) in ("", "0", "root"):
+    if str(s.get("user", "root")).split(":")[0] in ("", "0", "root"):
         erros.append(f"{nome}: executa como root")
     for p in s.get("ports", []):
         if p.get("host_ip") != "127.0.0.1":
@@ -85,6 +92,8 @@ ENTRY=infra/entrypoints/worker-ai.sh
 if [ -f "$ENTRY" ]; then
   ANTHROPIC_API_KEY=x CLAUDE_MODE=subscription sh "$ENTRY" true >/dev/null 2>&1 && falhar "aceitou ANTHROPIC_API_KEY no modo subscription"
   ANTHROPIC_API_KEY=x CLAUDE_MODE=api sh "$ENTRY" true >/dev/null 2>&1 || falhar "recusou ANTHROPIC_API_KEY no modo api"
+  ANTHROPIC_API_KEY=x CLAUDE_MODE=" Subscription " sh "$ENTRY" true >/dev/null 2>&1 && falhar "modo com caixa/espaço contornou a guarda"
+  ANTHROPIC_API_KEY= CLAUDE_MODE=invalido sh "$ENTRY" true >/dev/null 2>&1 && falhar "aceitou CLAUDE_MODE inválido"
   env -u ANTHROPIC_API_KEY CLAUDE_MODE=subscription sh "$ENTRY" true >/dev/null 2>&1 || falhar "recusou o modo subscription sem chave"
   ANTHROPIC_API_KEY= CLAUDE_MODE=subscription sh "$ENTRY" true >/dev/null 2>&1 || falhar "tratou chave vazia como definida"
 else

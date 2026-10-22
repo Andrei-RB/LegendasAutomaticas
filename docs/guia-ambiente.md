@@ -13,6 +13,21 @@ Subir localmente todos os serviços do sistema com Docker Compose e GPU NVIDIA, 
 | RAM | `.wslconfig` com `memory=12GB` e `swap=8GB` |
 | Disco | Repositório em disco local do Windows; os dados ficam em volumes nomeados, fora de `/mnt/c` |
 
+### 2.1 Preparação do Windows
+
+1. Crie ou edite `%UserProfile%\.wslconfig`:
+
+   ```ini
+   [wsl2]
+   memory=12GB
+   swap=8GB
+   ```
+
+2. Aplique: `wsl --shutdown` e reabra o Docker Desktop.
+3. Verifique o driver no Windows: `nvidia-smi`.
+4. Verifique a GPU no WSL: `wsl nvidia-smi`.
+5. Verifique a GPU em contêiner: `docker run --rm --gpus all nvidia/cuda:12.6.3-base-ubuntu24.04 nvidia-smi`.
+
 ## 3. Configuração
 
 1. Copie o modelo: `cp infra/.env.example infra/.env`.
@@ -48,6 +63,8 @@ O arquivo `infra/.env` não é versionado.
 
 Somente `api` e `frontend` publicam portas, e apenas em `127.0.0.1`.
 
+O `worker-gpu` não tem acesso à internet. Os modelos são baixados pelo `worker-cpu` para o volume `dados` (`HF_HOME=/dados/hf`) e reutilizados pelo `worker-gpu`.
+
 ## 6. Verificação
 
 | Verificação | Comando | Resultado esperado |
@@ -63,10 +80,10 @@ Somente `api` e `frontend` publicam portas, e apenas em `127.0.0.1`.
 
 | Controle | Aplicação |
 |---|---|
-| Usuário | Não root em todos os serviços, exceto `ollama` (volume de modelos gravável) |
+| Usuário | Não root em todos os serviços |
 | Capacidades | `cap_drop: ALL` e `no-new-privileges` |
 | Sistema de arquivos | `read_only` com `tmpfs` em `/tmp`; código da imagem pertence ao root |
-| Rede | Rede `interna` sem saída; `externa` somente para quem precisa (api, frontend, worker-cpu, worker-ai, ollama) |
+| Rede | `interna` e `ia` sem saída para a internet; `externa` somente para api, frontend, worker-cpu e worker-ai. O `ollama` só é alcançado por `worker-ai` e `worker-gpu` |
 | Recursos | Limite de memória e de processos por serviço |
 | Segredos | Obrigatórios no `.env`; ausência impede a subida e nomeia a variável |
-| Redis | Senha; comandos `FLUSHALL`, `FLUSHDB` e `DEBUG` desativados |
+| Redis | Senha hexadecimal obrigatória; comandos `FLUSHALL`, `FLUSHDB`, `DEBUG`, `CONFIG` e `MODULE` desativados |
