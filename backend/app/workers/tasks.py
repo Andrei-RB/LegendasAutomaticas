@@ -6,6 +6,7 @@ from app.midia.ffmpeg import extrair_audio
 from app.midia.transcricao import transcrever_e_gerar_srt
 from app.nucleo.config import settings
 from app.nucleo.logger import logger
+from app.nucleo.validacao import job_id_valido
 from app.workers.celery_app import celery_app
 
 MENSAGEM_FALHA = "Falha no processamento do vídeo."
@@ -22,7 +23,9 @@ def meta_falha(mensagem: str) -> dict:
     }
 
 
-def _dentro_do_upload(caminho: str) -> bool:
+def _caminho_do_job(caminho: str, job_id: str) -> bool:
+    if not job_id_valido(job_id) or not os.path.basename(caminho).startswith(f"{job_id}."):
+        return False
     base = os.path.realpath(settings.UPLOAD_DIR)
     try:
         return os.path.commonpath([base, os.path.realpath(caminho)]) == base
@@ -32,9 +35,9 @@ def _dentro_do_upload(caminho: str) -> bool:
 
 @celery_app.task(bind=True, name="process_video_task", soft_time_limit=3600, time_limit=3660)
 def process_video_task(self, caminho_video: str, job_id: str) -> dict[str, str]:
-    # O caminho vem do broker: nunca ler nem apagar fora do diretório de uploads.
-    if not _dentro_do_upload(caminho_video):
-        logger.error(f"[{job_id}] Caminho fora do diretório de uploads recusado.")
+    # Caminho e job_id vêm do broker: só atua sobre o arquivo do próprio job em uploads.
+    if not _caminho_do_job(caminho_video, job_id):
+        logger.error("Tarefa recusada: identificador ou caminho fora do padrão.")
         self.update_state(state="FAILURE", meta=meta_falha(MENSAGEM_FALHA))
         raise Ignore()
 

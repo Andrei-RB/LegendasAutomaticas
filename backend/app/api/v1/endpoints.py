@@ -10,19 +10,14 @@ from fastapi.responses import FileResponse
 from app.esquemas.job import JobError, JobResponse, JobStatus
 from app.nucleo.config import settings
 from app.nucleo.logger import logger
-from app.nucleo.validacao import validar_arquivo_video
+from app.nucleo.validacao import job_id_valido, validar_arquivo_video
 from app.workers.tasks import MENSAGEM_FALHA, process_video_task
 
 router = APIRouter()
 
 
 def _validar_job_id(job_id: str) -> None:
-    # O identificador compõe o caminho do arquivo: só UUID canônico evita path traversal.
-    try:
-        valido = str(uuid.UUID(job_id)) == job_id.lower()
-    except ValueError:
-        valido = False
-    if not valido:
+    if not job_id_valido(job_id):
         logger.warning(f"Identificador inválido: {job_id[:64]!r}")
         raise HTTPException(status_code=400, detail="ID Invalido")
 

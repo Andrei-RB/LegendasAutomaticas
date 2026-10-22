@@ -58,28 +58,29 @@ def test_download_devolve_o_srt_existente(cliente):
 @pytest.fixture
 def temporarios(monkeypatch):
     base = Path(settings.UPLOAD_DIR)
-    video = base / f"{uuid.uuid4()}.mp4"
-    audio = base / f"{uuid.uuid4()}.wav"
+    job_id = str(uuid.uuid4())
+    video = base / f"{job_id}.mp4"
+    audio = base / f"{job_id}.wav"
     video.write_bytes(b"v")
     audio.write_bytes(b"a")
     monkeypatch.setattr(process_video_task, "update_state", lambda **_: None)
     monkeypatch.setattr(tasks, "extrair_audio", lambda *_: str(audio))
-    return video, audio
+    return video, audio, job_id
 
 
 def test_tarefa_remove_temporarios_no_sucesso(temporarios, monkeypatch):
-    video, audio = temporarios
+    video, audio, job_id = temporarios
     monkeypatch.setattr(tasks, "transcrever_e_gerar_srt", lambda *_: "saida.srt")
 
-    resultado = process_video_task.run(str(video), "job-1")
+    resultado = process_video_task.run(str(video), job_id)
 
-    assert resultado["result_url"] == "/api/v1/download/job-1"
+    assert resultado["result_url"] == f"/api/v1/download/{job_id}"
     assert not video.exists()
     assert not audio.exists()
 
 
 def test_tarefa_remove_temporarios_na_falha(temporarios, monkeypatch):
-    video, audio = temporarios
+    video, audio, job_id = temporarios
 
     def falhar(*_):
         raise RuntimeError("modelo indisponível")
@@ -87,27 +88,28 @@ def test_tarefa_remove_temporarios_na_falha(temporarios, monkeypatch):
     monkeypatch.setattr(tasks, "transcrever_e_gerar_srt", falhar)
 
     with pytest.raises(Ignore):
-        process_video_task.run(str(video), "job-2")
+        process_video_task.run(str(video), job_id)
 
     assert not video.exists()
     assert not audio.exists()
 
 
 def test_tarefa_recusa_caminho_fora_do_upload_sem_apagar(tmp_path, monkeypatch):
-    alheio = tmp_path / "alheio.mp4"
+    job_id = str(uuid.uuid4())
+    alheio = tmp_path / f"{job_id}.mp4"
     alheio.write_bytes(b"v")
     estados = []
     monkeypatch.setattr(process_video_task, "update_state", lambda **k: estados.append(k))
 
     with pytest.raises(Ignore):
-        process_video_task.run(str(alheio), "job-3")
+        process_video_task.run(str(alheio), job_id)
 
     assert alheio.exists()
     assert estados[-1]["state"] == "FAILURE"
 
 
 def test_tarefa_falha_publica_somente_mensagem_fixa(temporarios, monkeypatch):
-    video, _ = temporarios
+    video, _, job_id = temporarios
     estados = []
     monkeypatch.setattr(process_video_task, "update_state", lambda **k: estados.append(k))
 
@@ -117,7 +119,7 @@ def test_tarefa_falha_publica_somente_mensagem_fixa(temporarios, monkeypatch):
     monkeypatch.setattr(tasks, "transcrever_e_gerar_srt", falhar)
 
     with pytest.raises(Ignore):
-        process_video_task.run(str(video), "job-4")
+        process_video_task.run(str(video), job_id)
 
     assert "segredo" not in str(estados[-1])
     assert estados[-1]["meta"]["status"] == MENSAGEM_FALHA
@@ -145,3 +147,16 @@ def test_status_de_falha_nao_expoe_detalhe_interno(cliente, monkeypatch):
 
 def test_status_com_identificador_invalido_retorna_400(cliente):
     assert cliente.get("/api/v1/status/nao-e-um-uuid").status_code == 400
+
+
+def test_tarefa_recusa_arquivo_de_outro_job_e_job_id_invalido(monkeypatch):
+    alheio = Path(settings.UPLOAD_DIR) / f"{uuid.uuid4()}.mp4"
+    alheio.write_bytes(b"v")
+    monkeypatch.setattr(process_video_task, "update_state", lambda **_: None)
+
+    for job_id in (str(uuid.uuid4()), "../../x"):
+        with pytest.raises(Ignore):
+            process_video_task.run(str(alheio), job_id)
+
+    assert alheio.exists()
+    alheio.unlink()

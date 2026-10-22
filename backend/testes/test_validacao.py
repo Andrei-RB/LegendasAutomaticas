@@ -1,11 +1,12 @@
 import asyncio
 import io
+import uuid
 
 import pytest
 from fastapi import HTTPException, UploadFile
 
 from app.nucleo.config import settings
-from app.nucleo.validacao import mensagem_limite_upload, validar_arquivo_video
+from app.nucleo.validacao import job_id_valido, mensagem_limite_upload, validar_arquivo_video
 
 MB = 1024 * 1024
 
@@ -71,3 +72,18 @@ def test_nome_unicode_com_extensao_valida_aceito(monkeypatch):
 def test_extensao_em_maiusculas_aceita(monkeypatch):
     monkeypatch.setattr(settings, "MAX_UPLOAD_SIZE", 2 * MB)
     assert asyncio.run(validar_arquivo_video(_arquivo("VIDEO.MP4", 10))) is True
+
+
+@pytest.mark.parametrize(
+    ("job_id", "esperado"),
+    [
+        (str(uuid.uuid4()), True),
+        ("12345678123456781234567812345678", False),
+        ("{12345678-1234-5678-1234-567812345678}", False),
+        ("ABCDEF12-1234-5678-1234-567812345678", False),
+        ("../../x", False),
+        ("", False),
+    ],
+)
+def test_job_id_valido_aceita_so_uuid_canonico(job_id, esperado):
+    assert job_id_valido(job_id) is esperado

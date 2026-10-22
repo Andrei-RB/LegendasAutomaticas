@@ -12,6 +12,7 @@ from app.nucleo.config import settings
 from app.nucleo.logger import logger
 from app.nucleo.validacao import mensagem_limite_upload
 
+AMBIENTES_LOCAIS = {"development", "dev", "local"}
 ORIGENS_BASE = ["http://localhost:8501", "http://127.0.0.1:8501", "http://localhost"]
 
 # API sem conteúdo ativo: nenhuma origem de script, estilo ou quadro é aceita.
@@ -99,6 +100,8 @@ class MiddlewareLimiteCargaUtil:
                 if not resposta_enviada:
                     resposta_enviada = True
                     await recusar()
+                elif mensagem["type"] == "http.response.body" and not mensagem.get("more_body"):
+                    await send(mensagem)
                 return
             if mensagem["type"] == "http.response.start":
                 resposta_enviada = True
@@ -143,7 +146,7 @@ def configurar_middlewares(aplicativo: FastAPI) -> None:
     aplicativo.add_middleware(
         CORSMiddleware,
         allow_origins=montar_origens_cors(
-            settings.CORS_ORIGINS, incluir_base=settings.APP_ENV != "production"
+            settings.CORS_ORIGINS, incluir_base=settings.APP_ENV.strip().lower() in AMBIENTES_LOCAIS
         ),
         allow_credentials=True,
         allow_methods=["GET", "POST", "OPTIONS"],
