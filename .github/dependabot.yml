@@ -20,11 +20,21 @@ updates:
       - /infra/placeholders/render
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: python
+        update-types: ["version-update:semver-minor"]
+      - dependency-name: nvidia/cuda
+        update-types: ["version-update:semver-minor"]
     commit-message:
       prefix: "chore"
   - package-ecosystem: docker-compose
     directory: /infra
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: "chore"
