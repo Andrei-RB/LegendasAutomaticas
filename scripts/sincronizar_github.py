@@ -55,7 +55,8 @@ def normalizar(texto: str | None) -> str:
 
 
 def preservar_marcacoes(atual: str | None, novo: str) -> str:
-    """Mantém marcados no corpo novo os itens já marcados no GitHub (texto idêntico)."""
+    """Mantém marcados os itens já marcados no GitHub (texto idêntico).
+    Itens com texto repetido no mesmo corpo compartilham a marcação."""
     marcados = set(CHECKBOX_MARCADO.findall((atual or "").replace("\r\n", "\n")))
     return CHECKBOX_VAZIO.sub(
         lambda m: f"{m.group(1)}{'x' if m.group(3) in marcados else ' '}{m.group(2)}{m.group(3)}", novo
@@ -70,9 +71,40 @@ def montar_patch(issue: dict, labels: list[str], milestone: int | None, corpo: s
         patch["labels"] = sorted(atuais | set(labels))
     if milestone and (issue.get("milestone") or {}).get("number") != milestone:
         patch["milestone"] = milestone
-    if normalizar(issue.get("body")) != normalizar(corpo):
+    # Issue fechada preserva o corpo, que pode ter sido editado à mão como registro.
+    if issue.get("state") != "closed" and normalizar(issue.get("body")) != normalizar(corpo):
         patch["body"] = preservar_marcacoes(issue.get("body"), corpo)
     return patch
+
+
+class SemRedirecionamento(urllib.request.HTTPRedirectHandler):
+    """Impede que o cabeçalho Authorization siga um redirecionamento para outro host."""
+
+    def redirect_request(self, *args, **kwargs):
+        return None
+
+
+ABRIR = urllib.request.build_opener(SemRedirecionamento).open
+
+
+def autores_permitidos(repo: str) -> set[str]:
+    """Só issues criadas pelo dono do repositório ou pela Action são tratadas como do roadmap."""
+    return {"github-actions[bot]", repo.split("/")[0]}
+
+
+def indexar_por_titulo(issues: list[dict], repo: str) -> dict:
+    """Indexa issues (não PRs) pelo título; aborta se o título pertencer a outro autor."""
+    permitidos = autores_permitidos(repo)
+    indice = {}
+    for i in issues:
+        if "pull_request" in i:
+            continue
+        autor = (i.get("user") or {}).get("login")
+        if autor in permitidos:
+            indice[i["title"]] = i
+        else:
+            indice.setdefault(i["title"], None)
+    return indice
 
 
 class GitHub:
@@ -80,17 +112,26 @@ class GitHub:
         self.repo, self.token = repo, token
 
     def chamar(self, metodo: str, caminho: str, dados=None):
-        url = caminho if caminho.startswith("http") else f"{API}/repos/{self.repo}{caminho}"
+        if caminho.startswith("http"):
+            if not caminho.startswith(f"{API}/"):
+                sys.exit(f"❌ URL fora de {API}: {caminho}")
+            url = caminho
+        else:
+            url = f"{API}/repos/{self.repo}{caminho}"
         req = urllib.request.Request(url, method=metodo, data=json.dumps(dados).encode() if dados is not None else None)
         req.add_header("Authorization", f"Bearer {self.token}")
         req.add_header("Accept", "application/vnd.github+json")
         req.add_header("X-GitHub-Api-Version", "2022-11-28")
         try:
-            with urllib.request.urlopen(req) as resp:
+            with ABRIR(req) as resp:
                 corpo = resp.read()
                 return resp.status, (json.loads(corpo) if corpo else None), resp.headers
         except urllib.error.HTTPError as e:
-            return e.code, json.loads(e.read() or b"{}"), e.headers
+            bruto = e.read() or b""
+            try:
+                return e.code, json.loads(bruto or b"{}"), e.headers
+            except ValueError:
+                return e.code, bruto.decode("utf-8", "replace")[:500], e.headers
 
     def listar(self, caminho: str):
         itens, url = [], f"{API}/repos/{self.repo}{caminho}{'&' if '?' in caminho else '?'}per_page=100"
@@ -122,14 +163,14 @@ def main():
         existentes = {}
         if token and args.repo:
             gh = GitHub(args.repo, token)
-            existentes = {i["title"]: i for i in gh.listar("/issues?state=all") if "pull_request" not in i}
+            existentes = indexar_por_titulo(gh.listar("/issues?state=all"), args.repo)
         epico = None
         for tipo, titulo, labels, corpo, _ in blocos:
             if tipo == "epic":
                 epico = titulo_milestone(titulo)
             ms = epico if tipo != "roadmap" else "-"
             situacao = ""
-            if titulo in existentes:
+            if existentes.get(titulo):
                 mudou = normalizar(existentes[titulo].get("body")) != normalizar(corpo)
                 situacao = f"  corpo: {'ATUALIZAR' if mudou else 'igual'}"
             print(f"{tipo:8} {titulo}  [{', '.join(labels)}]  milestone: {ms}{situacao}")
@@ -144,7 +185,9 @@ def main():
     existentes = {r["name"] for r in gh.listar("/labels")}
     for label in sorted({r for b in blocos for r in b[2]} - existentes):
         cor = "f9d0c4" if label.startswith("sprint-") else CORES_LABELS.get(label, "ededed")
-        gh.chamar("POST", "/labels", {"name": label, "color": cor})
+        status, dados, _ = gh.chamar("POST", "/labels", {"name": label, "color": cor})
+        if status not in (201, 422):  # 422: label já existe (criada em paralelo)
+            sys.exit(f"❌ label {label} → {status}: {dados}")
         print(f"🏷️  label criada: {label}")
 
     # 2. Milestones
@@ -160,13 +203,15 @@ def main():
             print(f"🎯 milestone criado: {nome}")
 
     # 3 e 4. Issues
-    issues = {i["title"]: i for i in gh.listar("/issues?state=all") if "pull_request" not in i}
+    issues = indexar_por_titulo(gh.listar("/issues?state=all"), args.repo)
     roadmap = epico = None
     milestone_atual = None
     for tipo, titulo, labels, corpo, _ in blocos:
         if tipo == "epic":
             milestone_atual = milestones[titulo_milestone(titulo)]
         ms = None if tipo == "roadmap" else milestone_atual
+        if titulo in issues and issues[titulo] is None:
+            sys.exit(f"❌ já existe uma issue com o título '{titulo}' criada por outro autor.")
         issue = issues.get(titulo)
         if issue is None:
             dados_novos = {"title": titulo, "body": corpo, "labels": labels}
@@ -178,7 +223,9 @@ def main():
             print(f"✅ criada #{issue['number']}: {titulo}")
             pai = roadmap if tipo == "epic" else epico if tipo == "issue" else None
             if pai:
-                gh.chamar("POST", f"/issues/{pai}/sub_issues", {"sub_issue_id": issue["id"]})
+                status, resposta, _ = gh.chamar("POST", f"/issues/{pai}/sub_issues", {"sub_issue_id": issue["id"]})
+                if status != 201:
+                    sys.exit(f"❌ sub-issue #{issue['number']} → {status}: {resposta}")
         else:
             patch = montar_patch(issue, labels, ms, corpo)
             if patch:

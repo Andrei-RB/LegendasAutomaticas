@@ -74,3 +74,52 @@ def test_todos_os_arquivos_de_sprint_tem_blocos_validos():
     titulos = [b[1] for b in blocos]
     assert len(titulos) == len(set(titulos)), "títulos duplicados quebram a busca por título"
     assert all(b[3] for b in blocos), "bloco sem corpo"
+
+
+def test_issue_fechada_nao_tem_corpo_atualizado():
+    fechada = {**issue(CORPO), "state": "closed"}
+    assert sg.montar_patch(fechada, ["backend"], 1, CORPO.replace("item b", "item c")) == {}
+
+
+def test_novo_com_crlf_equivale_ao_corpo_existente():
+    assert sg.montar_patch(issue(CORPO), ["backend"], 1, CORPO.replace("\n", "\r\n")) == {}
+
+
+def test_itens_duplicados_compartilham_a_marcacao():
+    atual = "- [x] repetido\n- [ ] outro"
+    novo = "- [ ] repetido\n- [ ] repetido\n- [ ] outro"
+    assert sg.preservar_marcacoes(atual, novo) == "- [x] repetido\n- [x] repetido\n- [ ] outro"
+
+
+def test_issue_de_outro_autor_nao_e_adotada():
+    issues = [
+        {"title": "A", "user": {"login": "dono"}},
+        {"title": "B", "user": {"login": "intruso"}},
+        {"title": "C", "user": {"login": "github-actions[bot]"}},
+        {"title": "D", "user": {"login": "dono"}, "pull_request": {}},
+    ]
+    indice = sg.indexar_por_titulo(issues, "dono/repo")
+    assert indice["A"] and indice["C"]
+    assert indice["B"] is None
+    assert "D" not in indice
+
+
+def test_chamar_recusa_url_fora_da_api():
+    with pytest.raises(SystemExit):
+        sg.GitHub("dono/repo", "t").chamar("GET", "https://evil.example/x")
+
+
+def test_chamar_devolve_texto_quando_o_erro_nao_e_json(monkeypatch):
+    import io
+    import urllib.error
+
+    def falha(req):
+        raise urllib.error.HTTPError(req.full_url, 502, "Bad Gateway", {}, io.BytesIO(b"<html>erro</html>"))
+
+    monkeypatch.setattr(sg, "ABRIR", falha)
+    status, dados, _ = sg.GitHub("dono/repo", "t").chamar("GET", "/issues")
+    assert status == 502 and "erro" in dados
+
+
+def test_redirecionamento_e_bloqueado():
+    assert sg.SemRedirecionamento().redirect_request(None, None, 302, "", {}, "https://evil.example") is None

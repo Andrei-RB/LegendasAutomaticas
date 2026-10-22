@@ -177,7 +177,8 @@
 - [ ] Dependência `usuario_atual` em todas as rotas, exceto `/health`, cadastro e login.
 - [ ] Toda consulta e todo acesso a arquivo filtrados por `user_id`; recurso de outro usuário responde 404.
 - [ ] Mensagem de erro idêntica para e-mail inexistente e senha incorreta.
-- [ ] Proteção contra CSRF nas rotas que alteram estado.
+- [ ] Proteção contra CSRF nas rotas que alteram estado: verificação dos cabeçalhos `Origin`/`Sec-Fetch-Site` contra a origem permitida, além do cookie `SameSite`.
+- [ ] Logout revoga o JWT: o `jti` entra em lista de revogação no Redis até a expiração do token.
 
 **5. Fora de escopo:** limite de taxa e bloqueio por tentativas (S7); renovação de token; recuperação de senha; login social; assistente de primeiro uso (S7).
 
@@ -187,6 +188,8 @@
 - Rota protegida sem cookie resulta em 401.
 - O banco guarda hash argon2; a senha em texto não aparece no banco nem nos logs.
 - Cookie emitido com `httpOnly` e `SameSite`.
+- POST de outra origem ou sem `Origin` permitido resulta em 403.
+- Token usado após o logout resulta em 401.
 - Cadastro bloqueado quando já existe usuário e `PERMITIR_CADASTRO` não está ativo.
 
 **7. Aceite:** `pytest backend/testes -k isolamento` verde, com um teste que prova que o usuário A não acessa os dados do usuário B.
@@ -197,7 +200,7 @@
 **2. Contexto:**
 - Seção "Pipeline" de `docs/plano-v2.md`; `CLAUDE.md`, seções 5 (princípios 1 e 2), 6 e 11 (`gpu:lock`).
 - O Celery é apenas transporte; o estado fica no banco (`execucoes_etapa`).
-- Armazenamento em disco: `dados/<usuario>/<video>/`.
+- Armazenamento em disco: `dados/<user_id>/<video_id>/`, com identificadores (UUID) gerados pelo servidor; o nome original do upload nunca compõe o caminho.
 
 **3. Dependências:** #13 (Redis e Postgres), #14 (`execucoes_etapa`), #15 (`usuario_atual` no SSE).
 
