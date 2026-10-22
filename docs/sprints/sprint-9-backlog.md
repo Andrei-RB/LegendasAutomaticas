@@ -20,3 +20,12 @@ Ideias boas que ficaram fora da v2. Avaliar depois da S7.
 
 <!-- issue: [Backlog] Simulador de post (mockup TikTok/Reels) | labels: backlog, frontend -->
 - [ ] Mostrar o vídeo com o texto num mockup do app.
+
+<!-- issue: [Backlog] Segredos em arquivo (secrets) em vez de variáveis de ambiente | labels: backlog, seguranca, infra -->
+- [ ] Montar os segredos em `/run/secrets` e lê-los no backend (`secrets_dir`), sem variáveis de ambiente nos contêineres.
+- [ ] Passar a subprocessos (ffmpeg, yt-dlp, `claude -p`) um ambiente mínimo.
+
+<!-- issue: [Backlog] Cadeia de suprimentos das imagens e dependências | labels: backlog, seguranca, infra -->
+- [ ] Fixar imagens por digest (`tag@sha256`).
+- [ ] Gerar lock com hashes e instalar com `--require-hashes`; auditar o lock no CI.
+- [ ] Separar o volume de modelos (escrita só no `worker-gpu`) dos volumes de uploads e saídas.

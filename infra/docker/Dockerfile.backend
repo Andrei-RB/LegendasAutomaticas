@@ -1,0 +1,26 @@
+FROM python:3.12.15-slim-bookworm
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    HOME=/tmp
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd --system --gid 10001 app \
+    && useradd --system --uid 10001 --gid app --no-create-home --shell /usr/sbin/nologin app \
+    && mkdir -p /dados /claude-config \
+    && chown app:app /dados /claude-config
+
+WORKDIR /app
+COPY backend/requirements.txt .
+RUN pip install -r requirements.txt
+
+# Código pertence ao root e fica somente leitura para o usuário da aplicação.
+COPY backend/app ./app
+COPY --chmod=755 infra/entrypoints/ /usr/local/bin/
+
+USER 10001:10001

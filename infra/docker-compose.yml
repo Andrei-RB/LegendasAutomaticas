@@ -1,0 +1,292 @@
+name: viraliza
+
+x-registro: &registro
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-endurecimento: &endurecimento
+  init: true
+  restart: unless-stopped
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  pids_limit: 256
+  logging: *registro
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,size=512m
+
+x-ambiente-app: &ambiente-app
+  APP_ENV: production
+  DEBUG: "false"
+  REDIS_URL: redis://:${SENHA_REDIS:?defina SENHA_REDIS em infra/.env}@redis:6379/0
+  UPLOAD_DIR: /dados/uploads
+  OUTPUT_DIR: /dados/saidas
+  LOG_DIR: /tmp/logs
+  HF_HOME: /dados/hf
+  CORS_ORIGINS: http://127.0.0.1:8080,http://localhost:8080
+  PYTHONDONTWRITEBYTECODE: "1"
+
+x-backend: &backend
+  <<: *endurecimento
+  image: viraliza/backend:dev
+  build:
+    context: ..
+    dockerfile: infra/docker/Dockerfile.backend
+  user: "10001:10001"
+  networks: [interna]
+  depends_on:
+    redis:
+      condition: service_healthy
+
+services:
+  api:
+    <<: *backend
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--no-server-header"]
+    environment:
+      <<: *ambiente-app
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET em infra/.env}
+    ports:
+      - "127.0.0.1:8000:8000"
+    networks: [interna, externa]
+    volumes:
+      - dados:/dados
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  worker-cpu:
+    <<: *backend
+    command: ["celery", "-A", "app.workers.celery_app", "worker", "-Q", "cpu,celery", "-c", "2", "-n", "worker-cpu@%h", "--loglevel=INFO"]
+    environment:
+      <<: *ambiente-app
+      HF_TOKEN: ${HF_TOKEN:-}
+    networks: [interna, externa]
+    volumes:
+      - dados:/dados
+    mem_limit: 1536m
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A app.workers.celery_app inspect ping -d worker-cpu@$$(hostname) -t 5"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  worker-ai:
+    <<: *backend
+    entrypoint: ["/usr/local/bin/worker-ai.sh"]
+    command: ["celery", "-A", "app.workers.celery_app", "worker", "-Q", "ai", "-c", "2", "-n", "worker-ai@%h", "--loglevel=INFO"]
+    environment:
+      <<: *ambiente-app
+      CLAUDE_MODE: ${CLAUDE_MODE:-subscription}
+      CLAUDE_CHAMADAS_DIA: ${CLAUDE_CHAMADAS_DIA:-50}
+      CLAUDE_CONFIG_DIR: /claude-config
+      CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      OLLAMA_URL: http://ollama:11434
+    networks: [interna, externa, ia]
+    volumes:
+      - dados:/dados
+      - claude_config:/claude-config
+    mem_limit: 1g
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A app.workers.celery_app inspect ping -d worker-ai@$$(hostname) -t 5"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  beat:
+    <<: *backend
+    command: ["celery", "-A", "app.workers.celery_app", "beat", "-s", "/tmp/celerybeat-schedule", "--pidfile", "/tmp/beat.pid", "--loglevel=INFO"]
+    environment:
+      <<: *ambiente-app
+      UPLOAD_DIR: /tmp/uploads
+      OUTPUT_DIR: /tmp/saidas
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os; os.kill(int(open('/tmp/beat.pid').read()), 0)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  worker-gpu:
+    <<: *endurecimento
+    image: viraliza/gpu:dev
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile.gpu
+    user: "10001:10001"
+    command: ["celery", "-A", "app.workers.celery_app", "worker", "-Q", "gpu", "-c", "1", "-n", "worker-gpu@%h", "--loglevel=INFO"]
+    environment:
+      <<: *ambiente-app
+      HF_TOKEN: ${HF_TOKEN:-}
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,video,utility
+    networks: [interna, ia]
+    volumes:
+      - dados:/dados
+    depends_on:
+      redis:
+        condition: service_healthy
+    mem_limit: 2560m
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A app.workers.celery_app inspect ping -d worker-gpu@$$(hostname) -t 5"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  ollama:
+    <<: *endurecimento
+    image: viraliza/ollama:dev
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile.ollama
+    user: "10001:10001"
+    environment:
+      HOME: /modelos
+      OLLAMA_MODELS: /modelos/modelos
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_KEEP_ALIVE: "0"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_NUM_PARALLEL: "1"
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,video,utility
+    networks: [ia]
+    volumes:
+      - modelos:/modelos
+    mem_limit: 4g
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  redis:
+    <<: *endurecimento
+    image: redis:7.4.11-alpine
+    user: "redis"
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        umask 077
+        case "$$REDISCLI_AUTH" in
+          *[!0-9a-f]*) echo "ERRO: SENHA_REDIS deve ser hexadecimal (openssl rand -hex 32)." >&2; exit 1 ;;
+        esac
+        {
+          echo "requirepass $$REDISCLI_AUTH"
+          echo 'appendonly yes'
+          echo 'save ""'
+          echo 'dir /data'
+          echo 'maxmemory 256mb'
+          echo 'maxmemory-policy noeviction'
+          echo 'rename-command FLUSHALL ""'
+          echo 'rename-command FLUSHDB ""'
+          echo 'rename-command DEBUG ""'
+          echo 'rename-command CONFIG ""'
+          echo 'rename-command MODULE ""'
+        } > /tmp/redis.conf
+        exec redis-server /tmp/redis.conf
+    environment:
+      REDISCLI_AUTH: ${SENHA_REDIS:?defina SENHA_REDIS em infra/.env}
+    networks: [interna]
+    volumes:
+      - redis_dados:/data
+    mem_limit: 384m
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  postgres:
+    <<: *endurecimento
+    image: postgres:17.11-alpine
+    user: "70:70"
+    environment:
+      POSTGRES_USER: viraliza
+      POSTGRES_DB: viraliza
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD em infra/.env}
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    networks: [interna]
+    volumes:
+      - pg_dados:/var/lib/postgresql/data
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=128m
+      - /var/run/postgresql:rw,nosuid,uid=70,gid=70,size=8m
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U viraliza -d viraliza"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  render:
+    <<: *endurecimento
+    image: viraliza/render-placeholder:dev
+    build:
+      context: ./placeholders/render
+    user: "1000:1000"
+    networks: [interna]
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    <<: *endurecimento
+    image: viraliza/frontend-placeholder:dev
+    build:
+      context: ./placeholders/frontend
+    user: "101:101"
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks: [interna, externa]
+    mem_limit: 128m
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+networks:
+  interna:
+    internal: true
+  ia:
+    internal: true
+  externa: {}
+
+volumes:
+  dados:
+  modelos:
+  redis_dados:
+  pg_dados:
+  claude_config:
