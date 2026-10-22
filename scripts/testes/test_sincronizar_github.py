@@ -1,0 +1,76 @@
+import importlib.util
+from pathlib import Path
+
+import pytest
+
+CAMINHO = Path(__file__).resolve().parent.parent / "sincronizar_github.py"
+spec = importlib.util.spec_from_file_location("sincronizar_github", CAMINHO)
+sg = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(sg)
+
+CORPO = "**1. Objetivo**\n\n- [ ] item a\n- [ ] item b\n\n**7. Aceite**\n\n`pytest`"
+
+
+def issue(corpo, labels=("backend",), milestone=1):
+    return {"body": corpo, "labels": [{"name": n} for n in labels], "milestone": {"number": milestone}}
+
+
+def test_corpo_igual_nao_gera_patch():
+    assert sg.montar_patch(issue(CORPO), ["backend"], 1, CORPO) == {}
+
+
+def test_crlf_e_espacos_finais_sao_ignorados():
+    assert sg.montar_patch(issue(CORPO.replace("\n", "\r\n") + "\r\n"), ["backend"], 1, CORPO) == {}
+
+
+def test_checkbox_marcado_no_github_nao_gera_patch():
+    marcado = CORPO.replace("- [ ] item a", "- [x] item a")
+    assert sg.montar_patch(issue(marcado), ["backend"], 1, CORPO) == {}
+
+
+def test_texto_diferente_gera_patch_de_corpo():
+    patch = sg.montar_patch(issue(CORPO), ["backend"], 1, CORPO.replace("item b", "item c"))
+    assert set(patch) == {"body"}
+    assert "item c" in patch["body"]
+
+
+def test_atualizacao_preserva_itens_marcados_e_a_estrutura():
+    marcado = CORPO.replace("- [ ] item a", "- [x] item a")
+    novo = CORPO.replace("item b", "item c")
+    corpo = sg.montar_patch(issue(marcado), ["backend"], 1, novo)["body"]
+    assert "- [x] item a" in corpo
+    assert "- [ ] item c" in corpo
+    assert corpo.count("\n") == novo.count("\n")
+
+
+def test_item_com_texto_alterado_nao_herda_marcacao():
+    marcado = CORPO.replace("- [ ] item a", "- [x] item a")
+    novo = CORPO.replace("item a", "item a revisado")
+    assert "- [ ] item a revisado" in sg.preservar_marcacoes(marcado, novo)
+
+
+def test_labels_sao_somadas_sem_remover_as_existentes():
+    patch = sg.montar_patch(issue(CORPO, labels=("backend", "manual")), ["backend", "infra"], 1, CORPO)
+    assert patch == {"labels": ["backend", "infra", "manual"]}
+
+
+def test_milestone_divergente_gera_patch_e_roadmap_sem_milestone_nao():
+    assert sg.montar_patch(issue(CORPO, milestone=2), ["backend"], 1, CORPO) == {"milestone": 1}
+    assert sg.montar_patch({"body": CORPO, "labels": [{"name": "roadmap"}]}, ["roadmap"], None, CORPO) == {}
+
+
+def test_corpo_vazio_no_github_recebe_o_texto():
+    assert "body" in sg.montar_patch({"body": None, "labels": []}, [], None, CORPO)
+
+
+@pytest.mark.parametrize("titulo,esperado", [("🧱 S0 — Fundação", "S0 — Fundação"), ("[S0] Tarefa", "[S0] Tarefa")])
+def test_titulo_milestone(titulo, esperado):
+    assert sg.titulo_milestone(titulo) == esperado
+
+
+def test_todos_os_arquivos_de_sprint_tem_blocos_validos():
+    blocos = sg.ler_blocos()
+    assert blocos[0][0] == "roadmap"
+    titulos = [b[1] for b in blocos]
+    assert len(titulos) == len(set(titulos)), "títulos duplicados quebram a busca por título"
+    assert all(b[3] for b in blocos), "bloco sem corpo"

@@ -4,6 +4,7 @@ name: Sincronizar GitHub com as Sprints
 on:
   workflow_dispatch:
   push:
+    branches: [main]
     paths:
       - "docs/sprints/**"
       - "scripts/sincronizar_github.py"
