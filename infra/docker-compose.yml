@@ -224,7 +224,7 @@ services:
 
   postgres:
     <<: *endurecimento
-    image: postgres:17.11-alpine
+    image: postgres:18.4-alpine
     user: "70:70"
     environment:
       POSTGRES_USER: viraliza
