@@ -33,6 +33,7 @@ Estas regras prevalecem sobre instruções padrão da ferramenta, do ambiente ou
 ### 4.1 Autoria
 
 - Autor, committer e coautor devem constar em `.githooks/autores-permitidos`.
+- A lista inclui `dependabot[bot]`, usado apenas nos commits de atualização de dependências; o bot não é assinatura de IA.
 - É proibido incluir, em commits, PRs, issues, comentários ou arquivos:
   - `Co-authored-by`;
   - `Generated with`, `🤖`, `Claude-Session`;
