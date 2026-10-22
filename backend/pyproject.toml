@@ -1,0 +1,20 @@
+[project]
+name = "viraliza-backend"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "S", "ASYNC"]
+
+[tool.ruff.lint.per-file-ignores]
+"testes/**" = ["S101", "S105", "S106"]
+
+[tool.pytest.ini_options]
+testpaths = ["testes"]
+pythonpath = ["."]
+markers = ["lento: testes que exigem GPU, modelos ou serviços externos"]
+addopts = "-ra --strict-markers"
