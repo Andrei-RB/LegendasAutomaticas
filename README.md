@@ -111,7 +111,7 @@ Execute em `backend/`:
 
 ```bash
 # API
-python -m uvicorn app.main:app --port 8000
+python -m uvicorn app.main:app --port 8000 --no-server-header
 
 # Worker Celery (outro terminal)
 python -m celery -A app.workers.celery_app worker --pool=solo -l info

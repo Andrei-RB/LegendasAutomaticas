@@ -1,4 +1,5 @@
 import os
+from typing import Any, TextIO
 
 from app.midia.srt import formatar_timestamp
 from app.nucleo.config import settings
@@ -7,7 +8,7 @@ from app.nucleo.logger import logger
 _modelo = None
 
 
-def carregar_modelo():
+def carregar_modelo() -> Any:
     global _modelo
     if _modelo is None:
         # Importação tardia: a dependência pesada só é carregada pelo worker que a usa.
@@ -18,13 +19,13 @@ def carregar_modelo():
     return _modelo
 
 
-def _escrever_entrada(arquivo, indice: int, inicio: float, fim: float, texto: str) -> None:
+def _escrever_entrada(arquivo: TextIO, indice: int, inicio: float, fim: float, texto: str) -> None:
     arquivo.write(
         f"{indice}\n{formatar_timestamp(inicio)} --> {formatar_timestamp(fim)}\n{texto}\n\n"
     )
 
 
-def transcrever_e_gerar_srt(caminho_audio: str, job_id: str, tarefa=None) -> str:
+def transcrever_e_gerar_srt(caminho_audio: str, job_id: str, tarefa: Any = None) -> str:
     """Transcreve o áudio e grava um SRT com uma entrada por palavra."""
     modelo = carregar_modelo()
 
@@ -39,12 +40,13 @@ def transcrever_e_gerar_srt(caminho_audio: str, job_id: str, tarefa=None) -> str
         for segmento in segmentos:
             if tarefa and duracao_total > 0:
                 progresso = 30 + int((segmento.end / duracao_total) * 60)
+                andamento = f"({int(segmento.end)}s de {int(duracao_total)}s)"
                 try:
                     tarefa.update_state(
                         state="PROCESSING",
                         meta={
                             "progress": progresso,
-                            "status": f"Transcrevendo... {int(segmento.end)}/{int(duracao_total)}s",
+                            "status": f"Transcrevendo... {andamento}",
                         },
                     )
                 except Exception as falha:

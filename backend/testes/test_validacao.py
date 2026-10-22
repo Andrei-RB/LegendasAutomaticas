@@ -46,12 +46,9 @@ def test_arquivo_exatamente_no_limite_e_aceito(monkeypatch):
     assert asyncio.run(validar_arquivo_video(_arquivo("video.mp4", 2 * MB))) is True
 
 
-def test_arquivo_vazio_nao_levanta_erro_inesperado(monkeypatch):
+def test_arquivo_vazio_e_aceito_pela_validacao(monkeypatch):
     monkeypatch.setattr(settings, "MAX_UPLOAD_SIZE", 2 * MB)
-    try:
-        assert asyncio.run(validar_arquivo_video(_arquivo("video.mp4", 0))) is True
-    except HTTPException as erro:
-        assert erro.status_code == 400
+    assert asyncio.run(validar_arquivo_video(_arquivo("video.mp4", 0))) is True
 
 
 def test_extensao_dupla_maliciosa_rejeitada():

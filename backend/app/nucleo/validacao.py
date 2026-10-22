@@ -23,7 +23,7 @@ async def validar_arquivo_video(arquivo: UploadFile) -> bool:
 
     extensao = os.path.splitext(nome_seguro)[1].lower()
     if extensao not in settings.allowed_extensions_list:
-        logger.warning(f"Extensão não permitida: {extensao} - Arquivo: {nome_seguro}")
+        logger.warning(f"Extensão não permitida: {extensao!r}")
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST, detail=f"Extensão de arquivo {extensao} não permitida."
         )

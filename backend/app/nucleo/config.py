@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True, extra="ignore")
 
-    APP_NAME: str = "Viraliza+"
+    APP_NAME: str = "Secure Subtitle Generator"
     APP_ENV: str = "production"
     DEBUG: bool = False
     API_V1_STR: str = "/api/v1"
@@ -19,8 +19,9 @@ class Settings(BaseSettings):
 
     MAX_UPLOAD_SIZE: int = 1024 * 1024 * 1024
     ALLOWED_EXTENSIONS: str = ".mp4,.avi,.mov,.mkv"
+    FFMPEG_TIMEOUT_S: int = 1800
 
-    # Origens extras separadas por vírgula, somadas à lista fixa de desenvolvimento.
+    # Origens extras separadas por vírgula; a lista fixa local só vale fora de produção.
     CORS_ORIGINS: str = ""
 
     @property

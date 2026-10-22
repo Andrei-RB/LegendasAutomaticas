@@ -1,7 +1,7 @@
 import os
 import shutil
 import uuid
-from typing import Annotated
+from typing import Annotated, BinaryIO
 
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from fastapi.concurrency import run_in_threadpool
@@ -11,12 +11,23 @@ from app.esquemas.job import JobError, JobResponse, JobStatus
 from app.nucleo.config import settings
 from app.nucleo.logger import logger
 from app.nucleo.validacao import validar_arquivo_video
-from app.workers.tasks import process_video_task
+from app.workers.tasks import MENSAGEM_FALHA, process_video_task
 
 router = APIRouter()
 
 
-def _gravar_arquivo(origem, caminho: str) -> None:
+def _validar_job_id(job_id: str) -> None:
+    # O identificador compõe o caminho do arquivo: só UUID canônico evita path traversal.
+    try:
+        valido = str(uuid.UUID(job_id)) == job_id.lower()
+    except ValueError:
+        valido = False
+    if not valido:
+        logger.warning(f"Identificador inválido: {job_id[:64]!r}")
+        raise HTTPException(status_code=400, detail="ID Invalido")
+
+
+def _gravar_arquivo(origem: BinaryIO, caminho: str) -> None:
     with open(caminho, "wb") as destino:
         shutil.copyfileobj(origem, destino)
 
@@ -34,7 +45,7 @@ async def upload_video(file: Annotated[UploadFile, File()]):
     nome_seguro = f"{job_id}{extensao}"
     caminho = os.path.join(settings.UPLOAD_DIR, nome_seguro)
 
-    logger.info(f"Upload recebido: '{file.filename}' -> '{nome_seguro}'")
+    logger.info(f"Upload recebido: {job_id} ({extensao.lower()})")
 
     try:
         await run_in_threadpool(_gravar_arquivo, file.file, caminho)
@@ -64,19 +75,20 @@ async def upload_video(file: Annotated[UploadFile, File()]):
 async def upload_video_get():
     raise HTTPException(
         status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
-        detail="Método não permitido. Envie o vídeo via POST.",
+        detail="Método não permitido. Você deve enviar via POST (Upload) com os dados do arquivo.",
     )
 
 
 @router.get("/status/{job_id}", response_model=JobStatus)
 async def get_status(job_id: str):
+    _validar_job_id(job_id)
     tarefa = process_video_task.AsyncResult(job_id)
 
     if tarefa.state == "PENDING":
         return JobStatus(job_id=job_id, status="PENDING", progress=0)
     if tarefa.state == "FAILURE":
-        mensagem = str(tarefa.info) if tarefa.info else "Erro de execução."
-        return JobStatus(job_id=job_id, status="FAILURE", progress=0, error=mensagem)
+        # Nunca repassar str(tarefa.info): pode conter caminhos e detalhes internos.
+        return JobStatus(job_id=job_id, status="FAILURE", progress=0, error=MENSAGEM_FALHA)
     if tarefa.state in ("PROCESSING", "SUCCESS"):
         meta = tarefa.info if isinstance(tarefa.info, dict) else {}
         return JobStatus(
@@ -90,10 +102,7 @@ async def get_status(job_id: str):
 
 @router.get("/download/{job_id}")
 async def download_srt(job_id: str):
-    # O identificador compõe o caminho do arquivo: só alfanumérico e hífen evita path traversal.
-    if not job_id.replace("-", "").isalnum():
-        logger.warning(f"Identificador inválido em download: {job_id!r}")
-        raise HTTPException(status_code=400, detail="ID inválido")
+    _validar_job_id(job_id)
 
     caminho_srt = os.path.join(settings.OUTPUT_DIR, f"{job_id}.srt")
     if not os.path.exists(caminho_srt):

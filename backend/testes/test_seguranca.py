@@ -9,19 +9,31 @@ BASE = ["http://localhost:8501", "http://127.0.0.1:8501", "http://localhost"]
 MB = 1024 * 1024
 
 
-def test_origens_base_sem_extras():
-    assert montar_origens_cors("") == BASE
+def test_producao_nao_inclui_origens_locais():
+    assert montar_origens_cors("") == []
+
+
+def test_origens_base_fora_de_producao():
+    assert montar_origens_cors("", incluir_base=True) == BASE
 
 
 def test_origens_extras_com_trim_e_sem_vazios():
-    origens = montar_origens_cors(" https://a.com , ,https://b.com,, ")
+    origens = montar_origens_cors(" https://a.com , ,https://b.com,, ", incluir_base=True)
     assert origens == BASE + ["https://a.com", "https://b.com"]
 
 
 def test_origens_sem_duplicar():
-    origens = montar_origens_cors("http://localhost,https://a.com,https://a.com")
+    origens = montar_origens_cors("http://localhost,https://a.com,https://a.com", incluir_base=True)
     assert origens == BASE + ["https://a.com"]
     assert len(origens) == len(set(origens))
+
+
+@pytest.mark.parametrize(
+    "invalida",
+    ["*", "https://*.a.com", "a.com", "ftp://a.com", "https://a.com/caminho", "javascript:x"],
+)
+def test_origens_invalidas_sao_descartadas(invalida):
+    assert montar_origens_cors(f"{invalida},https://ok.com") == ["https://ok.com"]
 
 
 def test_configurar_middlewares_e_chamavel():
@@ -85,3 +97,21 @@ def test_resposta_413_tambem_traz_cabecalhos_de_seguranca(cliente, monkeypatch):
         "/api/v1/upload-video", content=b"x", headers={"Content-Length": str(3 * MB)}
     )
     assert resposta.headers["x-content-type-options"] == "nosniff"
+
+
+def test_corpo_chunked_acima_do_limite_retorna_413(cliente, monkeypatch):
+    monkeypatch.setattr(settings, "MAX_UPLOAD_SIZE", 1 * MB)
+
+    def corpo():
+        yield b'--x\r\nContent-Disposition: form-data; name="file"; filename="v.mp4"\r\n\r\n'
+        for _ in range(4):
+            yield b"0" * (512 * 1024)
+
+    resposta = cliente.post(
+        "/api/v1/upload-video",
+        content=corpo(),
+        headers={"Content-Type": "multipart/form-data; boundary=x"},
+    )
+
+    assert resposta.status_code == 413
+    assert "1 MB" in resposta.json()["detail"]

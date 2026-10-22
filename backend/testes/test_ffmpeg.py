@@ -1,5 +1,7 @@
 import subprocess
 
+import pytest
+
 from app.midia.ffmpeg import extrair_audio, montar_comando_audio
 
 
@@ -8,22 +10,30 @@ def test_comando_audio_estrutura():
     assert isinstance(cmd, list)
     assert all(isinstance(item, str) for item in cmd)
     assert cmd[0] == "ffmpeg"
-    assert cmd[cmd.index("-i") + 1] == "/dados/video.mp4"
+    assert cmd[cmd.index("-i") + 1] == "file:/dados/video.mp4"
     assert cmd[cmd.index("-ar") + 1] == "16000"
     assert cmd[cmd.index("-ac") + 1] == "1"
     assert cmd[-1] == "/dados/audio.wav"
 
 
+def test_comando_audio_restringe_protocolos_e_formatos():
+    cmd = montar_comando_audio("/dados/video.mp4", "/dados/audio.wav")
+    assert "-nostdin" in cmd
+    assert cmd[cmd.index("-protocol_whitelist") + 1] == "file"
+    assert "matroska" in cmd[cmd.index("-format_whitelist") + 1]
+    assert cmd.index("-protocol_whitelist") < cmd.index("-i")
+
+
 def test_comando_audio_metacaracteres_ficam_em_um_unico_argumento():
     perigoso = "/dados/v; rm -rf $(id) `x`.mp4"
     cmd = montar_comando_audio(perigoso, "/dados/a b.wav")
-    assert perigoso in cmd
+    assert f"file:{perigoso}" in cmd
     assert cmd[-1] == "/dados/a b.wav"
 
 
 def test_comando_audio_caminho_unicode():
     cmd = montar_comando_audio("/dados/vídeo_ação.mp4", "/dados/áudio.wav")
-    assert "/dados/vídeo_ação.mp4" in cmd
+    assert "file:/dados/vídeo_ação.mp4" in cmd
     assert cmd[-1] == "/dados/áudio.wav"
 
 
@@ -45,3 +55,14 @@ def test_extrair_audio_usa_lista_e_nunca_shell(monkeypatch):
     assert args[0] == "ffmpeg"
     assert not nomeados.get("shell", False)
     assert args[-1] == resultado
+
+
+def test_extrair_audio_converte_timeout_em_erro(monkeypatch):
+    def estourar(args, *posicionais, **nomeados):
+        assert nomeados["timeout"] > 0
+        raise subprocess.TimeoutExpired(args, nomeados["timeout"])
+
+    monkeypatch.setattr(subprocess, "run", estourar)
+
+    with pytest.raises(RuntimeError, match="Tempo limite"):
+        extrair_audio("/dados/video.mp4", "job-t")
