@@ -25,3 +25,23 @@ A Action `.github/workflows/sincronizar-github.yml` lê estes arquivos e sincron
 - Rodar localmente: `GITHUB_TOKEN=... python scripts/sincronizar_github.py --repo <dono>/<repositorio>` (use `--dry-run` para conferir antes).
 
 Marcadores nos arquivos: `<!-- epic: Título | labels: ... -->` e `<!-- issue: Título | labels: ... -->`. Não mude o título de uma issue que já existe, porque a sincronização encontra as issues pelo título.
+
+- A sincronização roda apenas em push na `main`. O conteúdo dos arquivos é a fonte do corpo das issues.
+- Corpo, labels e milestone divergentes são atualizados. Itens de checklist já marcados no GitHub permanecem marcados quando o texto do item não muda.
+- Edite o corpo no arquivo, não no GitHub: uma edição feita no GitHub é sobrescrita na próxima sincronização.
+
+## Formato das issues
+
+Cada tarefa segue sete seções numeradas:
+
+| Seção | Conteúdo |
+|---|---|
+| 1. Objetivo | Resultado esperado, em uma frase |
+| 2. Contexto | Decisões (Dn/Fn) e seções do plano; restrições; código reaproveitável |
+| 3. Dependências | Issues que precisam estar concluídas (#N) |
+| 4. Tarefas | Checklist verificável |
+| 5. Fora de escopo | O que a tarefa não faz e onde isso entra |
+| 6. Testes exigidos | Regras que devem ter teste |
+| 7. Aceite | Comandos que demonstram a conclusão |
+
+O épico usa: objetivo, escopo, ordem e dependências, critério de pronto (comandos) e riscos. Sprints ainda sem esse formato mantêm o texto resumido e são detalhadas antes de seu início.
