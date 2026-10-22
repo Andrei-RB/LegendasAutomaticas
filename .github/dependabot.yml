@@ -13,3 +13,18 @@ updates:
       interval: weekly
     commit-message:
       prefix: "chore"
+  - package-ecosystem: docker
+    directories:
+      - /infra/docker
+      - /infra/placeholders/frontend
+      - /infra/placeholders/render
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore"
+  - package-ecosystem: docker-compose
+    directory: /infra
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore"
