@@ -51,7 +51,7 @@ O arquivo `infra/.env` não é versionado.
 | Serviço | Função | Porta no host |
 |---|---|---|
 | `api` | FastAPI | 127.0.0.1:8000 |
-| `frontend` | Página provisória até a S0 entregar a interface | 127.0.0.1:8080 |
+| `frontend` | Interface (SPA servida por nginx) e proxy de `/api` para a `api` | 127.0.0.1:8080 |
 | `worker-gpu` | Fila `gpu` (ASR, NVENC); concorrência 1 | — |
 | `worker-cpu` | Filas `cpu` e `celery` (fluxo atual de legendas) | — |
 | `worker-ai` | Fila `ai` (provedores externos) | — |
@@ -92,6 +92,19 @@ DATABASE_URL_TESTE=postgresql+psycopg://postgres:teste@127.0.0.1:55432/postgres 
 ```
 
 
+### 6.2 Frontend
+
+| Ação | Comando |
+|---|---|
+| Instalar | `cd frontend && npm ci` |
+| Desenvolvimento | `npm run dev` (porta 5173; `/api` é encaminhado para `127.0.0.1:8000`) |
+| Testes | `npm run test` |
+| Build | `npm run build` |
+| Tipos da API | `npm run gerar:api` (exige `python` com `backend/requirements.txt` instalado) |
+| Fumaça | `E2E_EMAIL=... E2E_SENHA=... npm run e2e` (exige a pilha ativa e Chromium: `npx playwright install chromium`) |
+
+O usuário do teste de fumaça é criado em `/api/v1/auth/cadastro` quando o cadastro está aberto; com o cadastro fechado, use as credenciais de um usuário existente.
+
 ## 7. Endurecimento aplicado
 
 | Controle | Aplicação |
@@ -102,4 +115,5 @@ DATABASE_URL_TESTE=postgresql+psycopg://postgres:teste@127.0.0.1:55432/postgres 
 | Rede | `interna` e `ia` sem saída para a internet; `externa` somente para api, frontend, worker-cpu e worker-ai. O `ollama` só é alcançado por `worker-ai` e `worker-gpu` |
 | Recursos | Limite de memória e de processos por serviço |
 | Segredos | Obrigatórios no `.env`; ausência impede a subida e nomeia a variável |
+| Frontend | nginx sem root, CSP restritiva e demais cabeçalhos de segurança; 30 requisições/min por IP em `login` e `cadastro` (rajada de 10); corpo limitado a 1 MB no proxy |
 | Redis | Senha hexadecimal obrigatória; comandos `FLUSHALL`, `FLUSHDB`, `DEBUG`, `CONFIG` e `MODULE` desativados |

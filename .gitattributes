@@ -1,3 +1,6 @@
 *.sh text eol=lf
 Dockerfile* text eol=lf
 infra/entrypoints/* text eol=lf
+frontend/openapi.json text eol=lf
+frontend/src/api/esquema.d.ts text eol=lf
+infra/frontend/* text eol=lf

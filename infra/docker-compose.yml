@@ -292,9 +292,10 @@ services:
 
   frontend:
     <<: *endurecimento
-    image: viraliza/frontend-placeholder:dev
+    image: viraliza/frontend:dev
     build:
-      context: ./placeholders/frontend
+      context: ..
+      dockerfile: infra/docker/Dockerfile.frontend
     user: "101:101"
     ports:
       - "127.0.0.1:8080:8080"
