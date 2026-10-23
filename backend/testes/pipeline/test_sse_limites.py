@@ -2,8 +2,8 @@ import threading
 import uuid
 
 import pytest
-from app.api.v1.analises import conexoes_ativas
 
+from app.api.v1.analises import conexoes_ativas
 from app.nucleo.config import settings
 from testes.pipeline.auxiliares import caminho_eventos, esperar_ate
 
