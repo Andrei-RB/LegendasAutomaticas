@@ -10,6 +10,9 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: av
         update-types: ["version-update:semver-major"]
+      # O kombu do Celery aceita apenas redis abaixo de 6.5.
+      - dependency-name: redis
+        versions: [">=6.5"]
     open-pull-requests-limit: 5
     commit-message:
       prefix: "chore"
