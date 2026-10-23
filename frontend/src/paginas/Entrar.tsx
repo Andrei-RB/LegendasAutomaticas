@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { type FormEvent, useId, useState } from "react";
+import { type FormEvent, useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router";
 import { entrar } from "@/api/auth";
@@ -37,6 +37,9 @@ export function Entrar() {
   const [email, definirEmail] = useState("");
   const [senha, definirSenha] = useState("");
   const [erros, definirErros] = useState<ErrosCampo>({});
+
+  // Na tela de login não há sessão conhecida; limpar aqui evita corrida com a guarda no logout.
+  useEffect(() => cliente.removeQueries(), [cliente]);
 
   const login = useMutation({
     mutationFn: entrar,

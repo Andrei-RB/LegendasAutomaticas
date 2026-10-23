@@ -1,9 +1,9 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useNavigate } from "react-router";
 import { sair } from "@/api/auth";
-import { CHAVE_SESSAO, useSessao } from "@/auth/useSessao";
+import { useSessao } from "@/auth/useSessao";
 import { cn } from "@/lib/utils";
 import { AlternarTema } from "./AlternarTema";
 import { Botao } from "./ui/botao";
@@ -18,16 +18,10 @@ export function Layout() {
   const { t } = useTranslation();
   const { usuario } = useSessao();
   const navegar = useNavigate();
-  const cliente = useQueryClient();
   const saida = useMutation({
     mutationFn: sair,
-    // A sessão local é encerrada mesmo que a revogação no servidor falhe.
-    onSettled: async () => {
-      // Limpar a sessão só depois de sair da rota evita que a guarda grave um destino de retorno.
-      await navegar("/entrar", { replace: true });
-      cliente.removeQueries({ predicate: (consulta) => consulta.queryKey[0] !== CHAVE_SESSAO[0] });
-      cliente.setQueryData(CHAVE_SESSAO, null);
-    },
+    // A sessão local é encerrada mesmo que a revogação no servidor falhe; o login limpa o cache.
+    onSettled: () => navegar("/entrar", { replace: true }),
   });
 
   return (
