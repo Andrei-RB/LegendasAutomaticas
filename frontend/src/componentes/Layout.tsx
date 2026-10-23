@@ -22,8 +22,9 @@ export function Layout() {
   const saida = useMutation({
     mutationFn: sair,
     // A sessão local é encerrada mesmo que a revogação no servidor falhe.
-    onSettled: () => {
-      void navegar("/entrar", { replace: true });
+    onSettled: async () => {
+      // Limpar a sessão só depois de sair da rota evita que a guarda grave um destino de retorno.
+      await navegar("/entrar", { replace: true });
       cliente.removeQueries({ predicate: (consulta) => consulta.queryKey[0] !== CHAVE_SESSAO[0] });
       cliente.setQueryData(CHAVE_SESSAO, null);
     },

@@ -163,6 +163,7 @@ describe("login e proteção de rotas", () => {
     await waitFor(() => expect(router.state.location.pathname).toBe("/entrar"));
     expect(api.contar("POST", LOGOUT)).toBe(1);
     expect(await screen.findByRole("button", { name: "Entrar" })).toBeInTheDocument();
+    expect(router.state.location.search).toBe("");
   });
 });
 
