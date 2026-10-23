@@ -4,7 +4,12 @@ const email = process.env.E2E_EMAIL;
 const senha = process.env.E2E_SENHA;
 
 test.describe("fumaça: login, navegação e logout", () => {
-  test.skip(!email || !senha, "Defina E2E_EMAIL e E2E_SENHA.");
+  test.beforeEach(() => {
+    const ausentes = !email || !senha;
+    // No CI a ausência das credenciais é falha, não omissão.
+    if (ausentes && process.env.CI) throw new Error("Defina E2E_EMAIL e E2E_SENHA.");
+    test.skip(ausentes, "Defina E2E_EMAIL e E2E_SENHA.");
+  });
 
   test("rota protegida redireciona para o login", async ({ page }) => {
     await page.goto("/painel");
@@ -40,13 +45,13 @@ test.describe("fumaça: login, navegação e logout", () => {
     await page.goto("/config");
     await expect(page).toHaveURL(/\/entrar\?de=%2Fconfig$/);
   });
+});
 
-  test("a interface é servida com cabeçalhos de segurança", async ({ request }) => {
-    const resposta = await request.get("/");
-    const cabecalhos = resposta.headers();
-    expect(cabecalhos["content-security-policy"]).toContain("default-src 'none'");
-    expect(cabecalhos["x-content-type-options"]).toBe("nosniff");
-    expect(cabecalhos["x-frame-options"]).toBe("DENY");
-    expect(cabecalhos["referrer-policy"]).toBe("no-referrer");
-  });
+test("a interface é servida com cabeçalhos de segurança", async ({ request }) => {
+  const resposta = await request.get("/");
+  const cabecalhos = resposta.headers();
+  expect(cabecalhos["content-security-policy"]).toContain("default-src 'none'");
+  expect(cabecalhos["x-content-type-options"]).toBe("nosniff");
+  expect(cabecalhos["x-frame-options"]).toBe("DENY");
+  expect(cabecalhos["referrer-policy"]).toBe("no-referrer");
 });
