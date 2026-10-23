@@ -7,6 +7,7 @@ type Tokens = Record<string, [number, number, number]>;
 
 function bloco(seletor: string): string {
   const inicio = css.indexOf(`${seletor} {`);
+  if (inicio < 0) throw new Error(`Seletor ausente em estilos.css: ${seletor}`);
   return css.slice(inicio, css.indexOf("}", inicio));
 }
 
@@ -14,6 +15,9 @@ function tokens(seletor: string): Tokens {
   const saida: Tokens = {};
   for (const m of bloco(seletor).matchAll(/--([\w-]+):\s*oklch\(([\d.]+)\s+([\d.]+)\s+([\d.]+)\)/g)) {
     saida[m[1]!] = [Number(m[2]), Number(m[3]), Number(m[4])];
+  }
+  for (const nome of ["background", "card", "muted", "input", "ring"]) {
+    if (!saida[nome]) throw new Error(`Token oklch ausente em ${seletor}: --${nome}`);
   }
   return saida;
 }
@@ -39,7 +43,8 @@ function razao(a: [number, number, number], b: [number, number, number]): number
 const temas = { claro: tokens(":root"), escuro: tokens(".dark") };
 
 describe.each(Object.entries(temas))("contraste WCAG 2.2 AA (%s)", (_, t) => {
-  it("borda de campo tem 3:1 contra o cartão e contra o fundo", () => {
+  it("borda de campo tem 3:1 contra o cartão, o fundo e o hover do botão contorno", () => {
+    expect(razao(t["input"]!, t["muted"]!)).toBeGreaterThanOrEqual(3);
     expect(razao(t["input"]!, t["card"]!)).toBeGreaterThanOrEqual(3);
     expect(razao(t["input"]!, t["background"]!)).toBeGreaterThanOrEqual(3);
   });
