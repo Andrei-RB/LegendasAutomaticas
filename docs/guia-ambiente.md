@@ -31,7 +31,7 @@ Subir localmente todos os serviços do sistema com Docker Compose e GPU NVIDIA, 
 ## 3. Configuração
 
 1. Copie o modelo: `cp infra/.env.example infra/.env`.
-2. Preencha `POSTGRES_PASSWORD`, `SENHA_REDIS` e `JWT_SECRET` com valores hexadecimais: `openssl rand -hex 32`.
+2. Preencha `POSTGRES_PASSWORD`, `POSTGRES_APP_PASSWORD`, `SENHA_REDIS` e `JWT_SECRET` com valores hexadecimais: `openssl rand -hex 32`. Outros caracteres quebram as URLs de conexão.
 3. Para o modo de assinatura do Claude, mantenha `ANTHROPIC_API_KEY` vazia. O worker de IA aborta se a variável estiver definida com `CLAUDE_MODE=subscription`.
 
 O arquivo `infra/.env` não é versionado.
@@ -58,6 +58,7 @@ O arquivo `infra/.env` não é versionado.
 | `beat` | Agendador | — |
 | `redis` | Broker, protegido por senha | — |
 | `postgres` | Banco de dados | — |
+| `migrar` | Aplica migrações e privilégios do papel da aplicação; executa uma vez | — |
 | `ollama` | Modelos locais; `KEEP_ALIVE=0`, um modelo por vez | — |
 | `render` | Serviço provisório até a renderização ser implementada | — |
 
@@ -75,6 +76,21 @@ O `worker-gpu` não tem acesso à internet. Os modelos são baixados pelo `worke
 | Codificador | `docker compose -f infra/docker-compose.yml exec worker-gpu ffmpeg -hide_banner -encoders` | Lista contém `h264_nvenc` |
 | Volumes | `docker volume ls` | `viraliza_dados`, `viraliza_modelos`, `viraliza_redis_dados`, `viraliza_pg_dados`, `viraliza_claude_config` |
 | Configuração | `bash scripts/verificar_infra.sh` | `STATUS: OK` |
+| Migrações | `docker compose -f infra/docker-compose.yml run --rm migrar` | Termina com código 0 (aplica as migrações e os privilégios do papel da aplicação) |
+| Pendências de esquema | `docker compose -f infra/docker-compose.yml run --rm migrar alembic check` | `No new upgrade operations detected.` |
+| Papel do banco | `docker compose -f infra/docker-compose.yml exec postgres psql -U viraliza_app -d viraliza -c "CREATE TABLE t (id int)"` | `permission denied for schema public` |
+
+O serviço `migrar` executa uma vez a cada `up` e é o único com a credencial do dono do banco (`viraliza`). `api` e workers usam o papel `viraliza_app`, limitado a SELECT, INSERT, UPDATE e DELETE. A senha do papel é `POSTGRES_APP_PASSWORD` em `infra/.env`.
+
+### 6.1 Testes do banco
+
+Os testes de banco usam PostgreSQL real e criam um banco efêmero por teste. Exigem `DATABASE_URL_TESTE` com a URL administrativa do servidor, por exemplo de um contêiner descartável:
+
+```
+docker run -d --name pg-teste -e POSTGRES_PASSWORD=teste -p 127.0.0.1:55432:5432 postgres:17.11-alpine
+DATABASE_URL_TESTE=postgresql+psycopg://postgres:teste@127.0.0.1:55432/postgres pytest backend -m "not lento"
+```
+
 
 ## 7. Endurecimento aplicado
 

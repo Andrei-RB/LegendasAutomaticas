@@ -21,6 +21,8 @@ RUN pip install -r requirements.txt
 
 # Código pertence ao root e fica somente leitura para o usuário da aplicação.
 COPY backend/app ./app
+COPY backend/alembic.ini ./alembic.ini
+COPY backend/alembic ./alembic
 COPY --chmod=755 infra/entrypoints/ /usr/local/bin/
 
 USER 10001:10001

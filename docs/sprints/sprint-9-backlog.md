@@ -24,8 +24,13 @@ Ideias boas que ficaram fora da v2. Avaliar depois da S7.
 <!-- issue: [Backlog] Segredos em arquivo (secrets) em vez de variáveis de ambiente | labels: backlog, seguranca, infra -->
 - [ ] Montar os segredos em `/run/secrets` e lê-los no backend (`secrets_dir`), sem variáveis de ambiente nos contêineres.
 - [ ] Passar a subprocessos (ffmpeg, yt-dlp, `claude -p`) um ambiente mínimo.
+- [ ] Declarar `REDIS_URL` como `SecretStr` (hoje a senha aparece em `repr(settings)`).
 
 <!-- issue: [Backlog] Cadeia de suprimentos das imagens e dependências | labels: backlog, seguranca, infra -->
 - [ ] Fixar imagens por digest (`tag@sha256`).
 - [ ] Gerar lock com hashes e instalar com `--require-hashes`; auditar o lock no CI.
 - [ ] Separar o volume de modelos (escrita só no `worker-gpu`) dos volumes de uploads e saídas.
+
+<!-- issue: [Backlog] Row Level Security como segunda camada de isolamento | labels: backlog, seguranca, backend -->
+- [ ] Avaliar RLS por `user_id` (`SET LOCAL app.user_id` por transação) sobre o papel `viraliza_app`.
+- [ ] Medir o custo em consultas do pipeline antes de adotar.
