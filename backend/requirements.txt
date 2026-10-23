@@ -10,7 +10,7 @@ faster-whisper==1.2.1
 # faster-whisper 1.1.1 importa requests e não funciona com huggingface-hub 2.x nem av 18+.
 huggingface-hub==0.36.2
 requests==2.34.2
-av==17.0.0
+av==17.1.0
 sqlalchemy==2.1.6
 alembic==1.20.1
 psycopg[binary]==3.3.6
