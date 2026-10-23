@@ -62,6 +62,7 @@ export function Entrar() {
         }
       }
       definirErros(novos);
+      document.getElementById(novos.email ? idEmail : idSenha)?.focus();
       return;
     }
     definirErros({});
@@ -97,7 +98,7 @@ export function Entrar() {
               aria-describedby={erros.email ? `${idEmail}-erro` : undefined}
             />
             {erros.email && (
-              <p id={`${idEmail}-erro`} className="text-sm text-destructive">
+              <p id={`${idEmail}-erro`} role="alert" className="text-sm text-destructive">
                 {t(erros.email)}
               </p>
             )}
@@ -114,7 +115,7 @@ export function Entrar() {
               aria-describedby={erros.senha ? `${idSenha}-erro` : undefined}
             />
             {erros.senha && (
-              <p id={`${idSenha}-erro`} className="text-sm text-destructive">
+              <p id={`${idSenha}-erro`} role="alert" className="text-sm text-destructive">
                 {t(erros.senha)}
               </p>
             )}

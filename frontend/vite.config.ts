@@ -8,8 +8,15 @@ export default defineConfig({
   resolve: { alias: { "@": path.resolve(import.meta.dirname, "src") } },
   server: {
     host: "127.0.0.1",
-    // Em desenvolvimento a API é encaminhada para manter cookie e origem no mesmo domínio.
-    proxy: { "/api": { target: "http://127.0.0.1:8000", changeOrigin: false } },
+    // A API aceita a origem do contêiner frontend (CORS_ORIGINS); o proxy a repassa no lugar de :5173.
+    proxy: {
+      "/api": {
+        target: "http://127.0.0.1:8000",
+        configure: (proxy) => {
+          proxy.on("proxyReq", (requisicao) => requisicao.setHeader("Origin", "http://127.0.0.1:8080"));
+        },
+      },
+    },
   },
   build: { sourcemap: false, target: "es2023" },
   test: {

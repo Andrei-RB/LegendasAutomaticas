@@ -6,7 +6,7 @@ import { useSessao } from "./useSessao";
 export function RotaProtegida() {
   const { t } = useTranslation();
   const { pathname, search } = useLocation();
-  const { usuario, carregando, erro, tentarDeNovo } = useSessao();
+  const { usuario, carregando, erro, recarregando, tentarDeNovo } = useSessao();
 
   if (carregando) {
     return (
@@ -19,7 +19,7 @@ export function RotaProtegida() {
     return (
       <div role="alert" className="flex flex-col items-start gap-3 p-6">
         <p>{t("sessao.erro")}</p>
-        <Botao variante="contorno" onClick={tentarDeNovo}>
+        <Botao variante="contorno" disabled={recarregando} onClick={tentarDeNovo}>
           {t("acoes.tentarDeNovo")}
         </Botao>
       </div>

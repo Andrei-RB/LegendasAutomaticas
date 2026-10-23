@@ -20,6 +20,7 @@ const LOGOUT = "/api/v1/auth/logout";
 interface EstadoApi {
   logado: boolean;
   respostaLogin?: (req: RequisicaoSimulada) => Response;
+  respostaLogout?: (req: RequisicaoSimulada) => Response;
 }
 
 // Simula o backend de autenticação com sessão mutável.
@@ -36,6 +37,7 @@ function simularApi(estado: EstadoApi) {
       return respostaJson(usuarioExemplo);
     }
     if (req.caminho === LOGOUT && req.metodo === "POST") {
+      if (estado.respostaLogout) return estado.respostaLogout(req);
       estado.logado = false;
       return respostaJson(undefined, 204);
     }
@@ -164,6 +166,37 @@ describe("login e proteção de rotas", () => {
     expect(api.contar("POST", LOGOUT)).toBe(1);
     expect(await screen.findByRole("button", { name: "Entrar" })).toBeInTheDocument();
     expect(router.state.location.search).toBe("");
+  });
+
+  it("falha de rede no logout mantém a sessão e mostra o erro", async () => {
+    simularApi({
+      logado: true,
+      respostaLogout: () => {
+        throw new TypeError("falha de rede");
+      },
+    });
+    const { router } = montarApp("/painel");
+    await userEvent.click(await screen.findByRole("button", { name: "Sair" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Sem conexão com o servidor. Verifique a rede e tente de novo.",
+    );
+    expect(router.state.location.pathname).toBe("/painel");
+  });
+
+  it("503 no logout (revogação falhou, cookie apagado) volta ao login", async () => {
+    simularApi({ logado: true, respostaLogout: () => respostaJson({ detail: "x" }, 503) });
+    const { router } = montarApp("/painel");
+    await userEvent.click(await screen.findByRole("button", { name: "Sair" }));
+    await waitFor(() => expect(router.state.location.pathname).toBe("/entrar"));
+  });
+
+  it("erros de validação são anunciados e o foco vai ao primeiro campo inválido", async () => {
+    simularApi({ logado: false });
+    montarApp("/entrar");
+    await userEvent.click(await screen.findByRole("button", { name: "Entrar" }));
+    const alertas = await screen.findAllByRole("alert");
+    expect(alertas).toHaveLength(2);
+    expect(screen.getByLabelText("E-mail")).toHaveFocus();
   });
 });
 

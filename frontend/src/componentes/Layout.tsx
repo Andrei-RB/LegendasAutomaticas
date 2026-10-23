@@ -3,6 +3,8 @@ import { LogOut } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useNavigate } from "react-router";
 import { sair } from "@/api/auth";
+import { ErroApi } from "@/api/erros";
+import { chaveErro } from "@/api/mensagemErro";
 import { useSessao } from "@/auth/useSessao";
 import { cn } from "@/lib/utils";
 import { AlternarTema } from "./AlternarTema";
@@ -20,8 +22,13 @@ export function Layout() {
   const navegar = useNavigate();
   const saida = useMutation({
     mutationFn: sair,
-    // A sessão local é encerrada mesmo que a revogação no servidor falhe; o login limpa o cache.
-    onSettled: () => navegar("/entrar", { replace: true }),
+    onSuccess: () => navegar("/entrar", { replace: true }),
+    // 401 e 503 já deixam o cookie inválido ou apagado; as demais falhas mantêm a sessão.
+    onError: (erro) => {
+      if (erro instanceof ErroApi && (erro.status === 401 || erro.status === 503)) {
+        return navegar("/entrar", { replace: true });
+      }
+    },
   });
 
   return (
@@ -67,6 +74,11 @@ export function Layout() {
         </div>
       </aside>
       <main className="mx-auto w-full max-w-6xl p-4 md:p-8">
+        {saida.isError && (
+          <p role="alert" className="mb-4 text-sm text-destructive">
+            {t(chaveErro(saida.error))}
+          </p>
+        )}
         <Outlet />
       </main>
     </div>

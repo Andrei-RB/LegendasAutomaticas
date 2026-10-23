@@ -23,6 +23,7 @@ export function useSessao() {
     usuario: consulta.data,
     carregando: consulta.isPending,
     erro: consulta.error,
+    recarregando: consulta.isFetching,
     tentarDeNovo: () => void consulta.refetch(),
   };
 }
