@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-23T22:06:30Z",
+  "title": "Design System: Viraliza+",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Laranja de Ação",
+        "canonical": "oklch(0.72 0.19 40)",
+        "tonalRamp": [
+          "oklch(0.15 0.076 40)",
+          "oklch(0.28 0.106 40)",
+          "oklch(0.42 0.138 40)",
+          "oklch(0.56 0.169 40)",
+          "oklch(0.68 0.183 40)",
+          "oklch(0.78 0.160 40)",
+          "oklch(0.88 0.138 40)",
+          "oklch(0.95 0.122 40)"
+        ]
+      },
+      "primary-claro": {
+        "role": "primary",
+        "displayName": "Laranja de Ação (claro)",
+        "canonical": "oklch(0.56 0.21 36)",
+        "tonalRamp": [
+          "oklch(0.15 0.084 36)",
+          "oklch(0.28 0.117 36)",
+          "oklch(0.42 0.152 36)",
+          "oklch(0.56 0.187 36)",
+          "oklch(0.68 0.202 36)",
+          "oklch(0.78 0.177 36)",
+          "oklch(0.88 0.152 36)",
+          "oklch(0.95 0.134 36)"
+        ]
+      },
+      "fundo": {
+        "role": "neutral",
+        "displayName": "Fundo Grafite",
+        "canonical": "oklch(0.16 0.006 60)",
+        "tonalRamp": [
+          "oklch(0.15 0.004 60)",
+          "oklch(0.28 0.006 60)",
+          "oklch(0.42 0.007 60)",
+          "oklch(0.56 0.009 60)",
+          "oklch(0.68 0.010 60)",
+          "oklch(0.78 0.008 60)",
+          "oklch(0.88 0.007 60)",
+          "oklch(0.95 0.006 60)"
+        ]
+      },
+      "fundo-claro": {
+        "role": "neutral",
+        "displayName": "Fundo Papel",
+        "canonical": "oklch(0.985 0.002 80)",
+        "tonalRamp": [
+          "oklch(0.15 0.004 80)",
+          "oklch(0.28 0.006 80)",
+          "oklch(0.42 0.007 80)",
+          "oklch(0.56 0.009 80)",
+          "oklch(0.68 0.010 80)",
+          "oklch(0.78 0.008 80)",
+          "oklch(0.88 0.007 80)",
+          "oklch(0.95 0.006 80)"
+        ]
+      },
+      "erro": {
+        "role": "semantic",
+        "displayName": "Erro",
+        "canonical": "oklch(0.7 0.19 25)",
+        "tonalRamp": [
+          "oklch(0.15 0.076 25)",
+          "oklch(0.28 0.106 25)",
+          "oklch(0.42 0.138 25)",
+          "oklch(0.56 0.169 25)",
+          "oklch(0.68 0.183 25)",
+          "oklch(0.78 0.160 25)",
+          "oklch(0.88 0.138 25)",
+          "oklch(0.95 0.122 25)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "titulo": {
+        "displayName": "Título",
+        "purpose": "Título de página e formulário."
+      },
+      "corpo": {
+        "displayName": "Corpo",
+        "purpose": "Conteúdo e mensagens."
+      },
+      "rotulo": {
+        "displayName": "Rótulo",
+        "purpose": "Rótulos, botões e itens de menu."
+      },
+      "marca": {
+        "displayName": "Marca",
+        "purpose": "Nome do produto na barra lateral."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "transicao-cor",
+        "value": "150ms ease (color, background-color)",
+        "purpose": "Troca de estado de botões e itens; sem movimento espacial."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "md",
+        "value": "768px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botão primário",
+      "kind": "button",
+      "refersTo": "botao-primario",
+      "description": "Ação principal da tela.",
+      "html": "<button class=\"ds-botao ds-botao-primario\">Entrar</button>",
+      "css": ".ds-botao{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border-radius:.5rem;font:500 .875rem/1.43 ui-sans-serif,system-ui,sans-serif;transition:background-color .15s,color .15s;cursor:pointer}.ds-botao-primario{background:oklch(0.72 0.19 40);color:oklch(0.17 0.01 40);border:0}.ds-botao-primario:hover{background:oklch(0.72 0.19 40/.9)}.ds-botao:focus-visible{outline:2px solid oklch(0.72 0.19 40);outline-offset:2px}"
+    },
+    {
+      "name": "Botão contorno",
+      "kind": "button",
+      "refersTo": "botao-contorno",
+      "description": "Ação secundária.",
+      "html": "<button class=\"ds-botao ds-botao-contorno\">Cancelar</button>",
+      "css": ".ds-botao{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border-radius:.5rem;font:500 .875rem/1.43 ui-sans-serif,system-ui,sans-serif;transition:background-color .15s,color .15s;cursor:pointer}.ds-botao-contorno{background:transparent;color:oklch(0.96 0.004 80);border:1px solid oklch(0.54 0.01 60)}.ds-botao-contorno:hover{background:oklch(0.24 0.008 60)}.ds-botao:focus-visible{outline:2px solid oklch(0.72 0.19 40);outline-offset:2px}"
+    },
+    {
+      "name": "Campo de texto",
+      "kind": "input",
+      "refersTo": "campo",
+      "description": "Entrada de uma linha com borda de 3:1.",
+      "html": "<input class=\"ds-campo\" placeholder=\"E-mail\">",
+      "css": ".ds-campo{height:40px;width:220px;padding:0 12px;border-radius:.5rem;border:1px solid oklch(0.54 0.01 60);background:transparent;color:oklch(0.96 0.004 80);font:400 .875rem/1.43 ui-sans-serif,system-ui,sans-serif}.ds-campo::placeholder{color:oklch(0.72 0.01 70)}.ds-campo:focus-visible{outline:2px solid oklch(0.72 0.19 40);outline-offset:2px}"
+    },
+    {
+      "name": "Item de menu ativo",
+      "kind": "nav",
+      "refersTo": "item-menu-ativo",
+      "description": "Item selecionado da barra lateral.",
+      "html": "<a class=\"ds-item\">Biblioteca</a>",
+      "css": ".ds-item{display:block;width:200px;padding:8px 12px;border-radius:.5rem;background:oklch(0.24 0.008 60);color:oklch(0.72 0.19 40);font:500 .875rem/1.43 ui-sans-serif,system-ui,sans-serif}"
+    },
+    {
+      "name": "Cartão",
+      "kind": "card",
+      "refersTo": "cartao",
+      "description": "Contêiner plano com filete.",
+      "html": "<div class=\"ds-cartao\">Conteúdo</div>",
+      "css": ".ds-cartao{width:220px;padding:24px;border-radius:10px;border:1px solid oklch(0.3 0.008 60);background:oklch(0.2 0.007 60);color:oklch(0.96 0.004 80);font:400 .875rem/1.43 ui-sans-serif,system-ui,sans-serif}"
+    }
+  ],
+  "narrative": {
+    "northStar": "A Mesa de Edição",
+    "overview": "A aplicação é uma bancada de trabalho: superfícies escuras e neutras, texto de alto contraste e um único acento laranja que marca apenas o que está ativo ou é a próxima ação. A interface recua para que o vídeo e a transcrição ocupem o primeiro plano. Prioridade: fluidez e clareza, para quem revisa muitos cortes por dia.\n\nReferências de comportamento, confirmadas pela direção do produto: a resposta instantânea, a barra lateral densa e silenciosa e os atalhos de teclado de uma ferramenta de gestão de tarefas; o acento que se destaca sobre o fundo escuro sem cansar, como em um lançador de comandos; a convivência de transcrição e vídeo na mesma tela, como em um editor de vídeo por texto. A marca (login e página de apresentação) pode ser mais expressiva, com tipografia de destaque e transições entre seções, desde que o movimento tenha propósito. Esse trecho de marca ainda não foi implementado.\n\nRejeições confirmadas: cartão centralizado genérico, gradiente roxo, ícones decorativos sem função e animações que atrasem o trabalho.",
+    "keyCharacteristics": [
+      "Tema escuro por padrão; tema claro equivalente, com os mesmos papéis de cor.",
+      "Neutros levemente quentes (matiz 60–80) e um acento laranja; nenhuma segunda cor de destaque.",
+      "Superfícies planas, separadas por filete de 1 px, sem sombra.",
+      "Tipografia do sistema; hierarquia por peso e tamanho, não por fonte.",
+      "Densidade média: alvos de 40 px, texto de 14 px."
+    ],
+    "rules": [
+      {
+        "name": "A Regra de Uma Voz",
+        "body": "O laranja marca apenas o item ativo, a ação primária da tela e o foco. Se mais de um elemento por região competir por ele, nenhum se destaca.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Contraste",
+        "body": "Todo texto atinge 4,5:1 e todo contorno de componente interativo atinge 3:1. O teste `src/tema/contraste.test.ts` falha ao violar.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Tamanho Único",
+        "body": "Texto de interface fica em 14 px; a escala só sobe para título e marca.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra do Plano",
+        "body": "Superfícies em repouso não têm sombra, borda dupla nem cartão dentro de cartão.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do usar `transform` e `opacity` em qualquer animação, com duração curta, e respeitar `prefers-reduced-motion`.",
+      "Do manter foco visível e operação completa por teclado em todo controle.",
+      "Do mostrar estados vazio, carregando, erro e sucesso em toda tela.",
+      "Do reservar o laranja ao ativo, à ação primária e ao foco.",
+      "Do manter o mesmo pacote de renderização para a prévia e o vídeo final quando a legenda entrar no frontend."
+    ],
+    "donts": [
+      "Don't usar cartão centralizado genérico como composição de tela. A tela de login atual ainda o usa e deve ser redesenhada na etapa de marca.",
+      "Don't usar gradiente roxo, nem gradientes decorativos.",
+      "Don't usar ícones decorativos sem função; ícone só substitui texto quando há `aria-label`.",
+      "Don't usar animação que atrase o trabalho: nada de transição que bloqueie a próxima ação.",
+      "Don't introduzir sombras, cartões aninhados ou uma segunda cor de destaque."
+    ]
+  }
+}
