@@ -45,3 +45,11 @@ Ideias boas que ficaram fora da v2. Avaliar depois da S7.
 
 <!-- issue: [Backlog] Serviço worker-agy dedicado, sem volume dados e sem segredos | labels: backlog, seguranca, infra -->
 - [ ] Isolar o agy em serviço próprio, com fila `ai_agy` e volume `clipes_ia`, sem `dados` e sem segredos (plano B2 do spike agy).
+
+<!-- issue: [Backlog] Limite de tentativas de login na API (por conta e IP) | labels: backlog, seguranca, backend -->
+- [ ] Limitar tentativas por e-mail e por IP na API, com Redis, independente do nginx (a porta 8000 também é publicada em `127.0.0.1`).
+- [ ] Repassar o IP real do cliente pelo proxy e confiar apenas no cabeçalho do proxy do projeto.
+
+<!-- issue: [Backlog] Limite de corpo no nginx para o upload de vídeo | labels: backlog, frontend, infra -->
+- [ ] Definir `client_max_body_size` e `proxy_request_buffering off` apenas na rota de upload quando a tela de envio existir.
+- [ ] Alinhar o limite ao `MAX_UPLOAD_SIZE` da API.
