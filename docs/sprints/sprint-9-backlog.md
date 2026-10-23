@@ -34,3 +34,14 @@ Ideias boas que ficaram fora da v2. Avaliar depois da S7.
 <!-- issue: [Backlog] Row Level Security como segunda camada de isolamento | labels: backlog, seguranca, backend -->
 - [ ] Avaliar RLS por `user_id` (`SET LOCAL app.user_id` por transação) sobre o papel `viraliza_app`.
 - [ ] Medir o custo em consultas do pipeline antes de adotar.
+
+<!-- issue: [Backlog] Coletores de métricas por API (TikTok, YouTube, Instagram) | labels: backlog, backend -->
+- [ ] Implementar `ColetorMetricas` para as APIs das plataformas, com autorização do próprio usuário.
+- [ ] Manter `ColetorManual` como reserva.
+
+<!-- issue: [Backlog] Proxy de saída com lista de domínios permitidos para os workers de IA | labels: backlog, seguranca, infra -->
+- [ ] Limitar a saída de rede dos workers de IA aos domínios dos provedores autorizados.
+- [ ] Testar o bloqueio de domínio fora da lista.
+
+<!-- issue: [Backlog] Serviço worker-agy dedicado, sem volume dados e sem segredos | labels: backlog, seguranca, infra -->
+- [ ] Isolar o agy em serviço próprio, com fila `ai_agy` e volume `clipes_ia`, sem `dados` e sem segredos (plano B2 do spike agy).

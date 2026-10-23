@@ -59,6 +59,20 @@ Tudo **local via Docker**, gratuito sempre que possível, usando Qwen (local), G
 | D38 | Fontes: **catálogo OFL (~12) + upload próprio** (validado) |
 | D39 | **Alinhamento fino** (torchaudio MMS forced aligner, local) só nos cortes escolhidos |
 | D40 | Escolha do modelo numa **galeria com prévia tocando o próprio corte** |
+| D41 | Gemini e Claude via assinatura pelo Antigravity CLI (`agy`), com `AGY_MODE=off` por padrão; o risco de termos de uso é aceito só para uso pessoal |
+| D42 | Família separada do provedor (google, anthropic, alibaba, openai); Gemini e Gemma não formam consenso |
+| D43 | Cadeia do juiz: agy `gemini-4-argon-medium` → Gemini API → Gemma |
+| D44 | Cadeias do editor e das postagens: Claude CLI → agy `claude-sonnet-5-5` → Qwen |
+| D45 | Uso de até 80% das cotas das assinaturas, medido por `/usage` e por contador local, com reserva de 20% |
+| D46 | Funil com editor às cegas: o editor não recebe as notas dos outros juízes |
+| D47 | Perfis de conteúdo podcast, gameplay, aula e vlog, cada um com critérios extras de rubrica |
+| D48 | Ganchos: 2 a 3 variações por corte, ancoradas em `frase_id` |
+| D49 | Temas em alta por nicho, com cache de 24 h; peso 0,5 e fora do consenso |
+| D50 | Explicação da nota com até 280 caracteres e citação literal, com prova de visualização por ID |
+| D51 | Quase-aprovados viram opções de ajuste geradas pelo código, escolhidas por `ajuste_id` |
+| D52 | Referências virais externas para calibração, com métricas digitadas |
+| D53 | Métricas de publicação manuais, por `ColetorMetricas`; coletores por API ficam no backlog |
+| D54 | Revisão manual obrigatória antes do render |
 
 ## Arquitetura
 
@@ -249,6 +263,8 @@ Os **8 modelos de sistema** (D33) são arquivos JSON em `pacotes/modelos-legenda
 - `documento.json`, para reabrir depois.
 
 ### Roteador de IA (`ia/roteador.py`)
+
+> Atualizado por D41–D54. Detalhamento em [`plano-ia-agy.md`](plano-ia-agy.md); em caso de conflito, prevalece aquele documento.
 
 Fluxo de cada chamada:
 1. Resolve a cadeia de provedores da tarefa.
