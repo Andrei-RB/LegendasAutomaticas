@@ -56,7 +56,7 @@
 
 **Aceite:** num vídeo de teste, nenhum bloco sobrepõe o rosto.
 
-<!-- issue: [S5a] SRT nos 4 modos + trilha de palavras no editor | labels: legendas, frontend, sprint-5 -->
+<!-- issue: [S5a] SRT nos 4 modos + trilha de palavras no editor | labels: legendas, frontend, sprint-5, ui -->
 **Objetivo:** exportar e editar a legenda.
 
 - [ ] `legenda_<modo>.srt` com emojis, destaques em MAIÚSCULAS e censura.

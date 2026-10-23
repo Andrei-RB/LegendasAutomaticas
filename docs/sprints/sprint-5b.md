@@ -19,7 +19,7 @@
 
 **Aceite:** um modelo inválido é recusado nos dois lados.
 
-<!-- issue: [S5b] 8 modelos de sistema | labels: legendas, frontend, sprint-5 -->
+<!-- issue: [S5b] 8 modelos de sistema | labels: legendas, frontend, sprint-5, ui -->
 **Objetivo:** catálogo inicial de modelos.
 
 - [ ] Bold/Hormozi, MrBeast, Karaokê, Caixa, Minimal, Clean, Neon e Gradiente, em `pacotes/modelos-legenda/modelos/`.
@@ -45,7 +45,7 @@
 
 **Aceite:** uma fonte enviada aparece na prévia e no vídeo final.
 
-<!-- issue: [S5b] Galeria de modelos no editor do corte | labels: frontend, sprint-5 -->
+<!-- issue: [S5b] Galeria de modelos no editor do corte | labels: frontend, sprint-5, ui -->
 **Objetivo:** escolher o modelo vendo o próprio corte.
 
 - [ ] Aba Modelo: 8 cards + "Meus modelos", com prévia ao passar o mouse (um Player por vez).
@@ -53,7 +53,7 @@
 
 **Aceite:** trocar o modelo atualiza a prévia na hora.
 
-<!-- issue: [S5b] Editor visual de modelos (/modelos) | labels: frontend, sprint-5 -->
+<!-- issue: [S5b] Editor visual de modelos (/modelos) | labels: frontend, sprint-5, ui -->
 **Objetivo:** criar e editar modelos próprios.
 
 - [ ] Controles de todos os campos do `EspecModelo`, com prévia ao vivo.

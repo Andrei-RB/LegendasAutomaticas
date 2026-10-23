@@ -18,7 +18,7 @@ Ideias boas que ficaram fora da v2. Avaliar depois da S7.
 <!-- issue: [Backlog] Sugestão de thumbnail | labels: backlog, ia -->
 - [ ] Frames candidatos → o juiz multimodal escolhe → PNG com texto.
 
-<!-- issue: [Backlog] Simulador de post (mockup TikTok/Reels) | labels: backlog, frontend -->
+<!-- issue: [Backlog] Simulador de post (mockup TikTok/Reels) | labels: backlog, frontend, ui -->
 - [ ] Mostrar o vídeo com o texto num mockup do app.
 
 <!-- issue: [Backlog] Segredos em arquivo (secrets) em vez de variáveis de ambiente | labels: backlog, seguranca, infra -->

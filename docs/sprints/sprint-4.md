@@ -29,7 +29,7 @@
 
 **Aceite:** um único encode, com qualidade igual ao S1.
 
-<!-- issue: [S4] Aba Enquadramento no editor | labels: frontend, sprint-4 -->
+<!-- issue: [S4] Aba Enquadramento no editor | labels: frontend, sprint-4, ui -->
 **Objetivo:** permitir ajustar o enquadramento na interface.
 
 - [ ] Opções: automático, manual (arrastar a janela) ou original.

@@ -123,3 +123,22 @@ def test_chamar_devolve_texto_quando_o_erro_nao_e_json(monkeypatch):
 
 def test_redirecionamento_e_bloqueado():
     assert sg.SemRedirecionamento().redirect_request(None, None, 302, "", {}, "https://evil.example") is None
+
+
+def test_issue_com_label_ui_recebe_o_bloco_de_frontend_uma_vez():
+    bloco = sg.ARQUIVO_BLOCO_UI.read_text(encoding="utf-8").strip()
+    com_ui = [b for b in sg.ler_blocos() if b[0] == "issue" and sg.LABEL_UI in b[2]]
+    assert com_ui, "nenhuma issue de interface marcada com a label ui"
+    assert all(b[3].count(bloco) == 1 for b in com_ui)
+
+
+def test_issue_sem_label_ui_e_epicos_nao_recebem_o_bloco():
+    bloco = sg.ARQUIVO_BLOCO_UI.read_text(encoding="utf-8").strip()
+    outros = [b for b in sg.ler_blocos() if not (b[0] == "issue" and sg.LABEL_UI in b[2])]
+    assert all(bloco not in b[3] for b in outros)
+
+
+def test_todas_as_issues_de_tela_tem_a_label_ui():
+    sem_ui = [b[1] for b in sg.ler_blocos() if b[0] == "issue" and "frontend" in b[2] and sg.LABEL_UI not in b[2]]
+    sem_tela = {"[S0] Frontend base (Vite + React + TS)", "[Backlog] Limite de corpo no nginx para o upload de vídeo"}
+    assert set(sem_ui) <= sem_tela, "issue de frontend com tela precisa da label ui"
