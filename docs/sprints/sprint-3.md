@@ -100,7 +100,7 @@
 
 **Aceite:** saída sem critério ou com citação inexistente é rejeitada.
 
-<!-- issue: [S3] Galeria completa + painel de cotas | labels: frontend, sprint-3 -->
+<!-- issue: [S3] Galeria completa + painel de cotas | labels: frontend, sprint-3, ui -->
 **Objetivo:** mostrar por que cada corte foi escolhido.
 
 - [ ] Card: prévia em loop ao passar o mouse, notas por critério, concordância dos juízes, motivo, título-gancho e 👍/👎 com motivo (vai para `feedback`).

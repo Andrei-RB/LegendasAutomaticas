@@ -21,7 +21,20 @@ CORES_LABELS = {
     "roadmap": "5319e7", "epic": "3e4b9e", "backlog": "cccccc",
     "backend": "1d76db", "frontend": "c5def5", "ia": "8b5cf6", "legendas": "fbca04",
     "cortes": "e99695", "render": "c2e0c6", "infra": "bfd4f2", "testes": "d4c5f9", "docs": "0075ca",
+    "ui": "d93f0b",
 }
+
+# Toda issue com esta label recebe o bloco de construção de frontend ao final do corpo.
+LABEL_UI = "ui"
+ARQUIVO_BLOCO_UI = PASTA_SPRINTS / "bloco-ui.md"
+
+
+def acrescentar_bloco_ui(tipo: str, labels: list[str], corpo: str) -> str:
+    """Anexa o bloco de frontend às issues com a label `ui`; demais blocos ficam intactos."""
+    if tipo != "issue" or LABEL_UI not in labels:
+        return corpo
+    bloco = ARQUIVO_BLOCO_UI.read_text(encoding="utf-8").strip()
+    return f"{corpo}\n\n---\n\n{bloco}"
 
 
 def ler_blocos():
@@ -33,7 +46,8 @@ def ler_blocos():
         for i, m in enumerate(marcas):
             fim = marcas[i + 1].start() if i + 1 < len(marcas) else len(texto)
             labels = [x.strip() for x in m.group(3).split(",") if x.strip()]
-            blocos.append((m.group(1), m.group(2), labels, texto[m.end():fim].strip(), arquivo.name))
+            corpo = acrescentar_bloco_ui(m.group(1), labels, texto[m.end():fim].strip())
+            blocos.append((m.group(1), m.group(2), labels, corpo, arquivo.name))
     return blocos
 
 

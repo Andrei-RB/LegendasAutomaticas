@@ -51,7 +51,7 @@
 
 **Aceite:** o relatório com a linha de base fica salvo no repositório.
 
-<!-- issue: [S2] Linha do tempo com forma de onda, mapa de calor e miniaturas | labels: frontend, sprint-2 -->
+<!-- issue: [S2] Linha do tempo com forma de onda, mapa de calor e miniaturas | labels: frontend, sprint-2, ui -->
 **Objetivo:** mostrar os sinais no editor.
 
 - [ ] Endpoints `forma-onda`, `mapa-calor` e `miniaturas`.

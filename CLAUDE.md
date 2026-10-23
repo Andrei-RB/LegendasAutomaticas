@@ -21,7 +21,7 @@ Sistema local, executado em Docker, que recebe um vídeo longo e produz:
 |---|---|
 | Fase | Planejamento concluído. Próxima etapa: Sprint S0 (issue #2, tarefas #12–#18) |
 | Código existente | Versão 1 em `app/`, `frontend/frontend_app.py` (Streamlit) e `launcher.py`. Será reorganizada na S0, no mesmo repositório |
-| Referências | `docs/plano-v2.md` (decisões D1–D54, F1–F10), `docs/plano-ia-agy.md` (IA por assinatura e viralização) e `docs/sprints/` (tarefas) |
+| Referências | `docs/plano-v2.md` (decisões D1–D54, F1–F10), `docs/plano-ia-agy.md` (IA por assinatura e viralização), `docs/protocolo-frontend.md` (construção de interface) e `docs/sprints/` (tarefas) |
 | Precedência | Issue do GitHub > `docs/sprints/` > `docs/plano-ia-agy.md` > `docs/plano-v2.md` > este arquivo |
 
 Atualizar esta tabela ao final de cada Sprint.
@@ -141,6 +141,16 @@ Roteamento de IA (`backend/app/ia/roteador.py`):
 5. Executar as verificações da seção 10.
 6. Abrir PR com `Closes #N` usando o template.
 
+### 9.1 Frontend (gatilho automático)
+
+Qualquer tarefa que crie ou altere interface segue `docs/protocolo-frontend.md` sem pedido adicional. Gatilhos:
+
+- issue com a label `ui`;
+- alteração em `frontend/` ou `pacotes/modelos-legenda/`;
+- tarefa que cite tela, aba, modal, componente, layout, editor, galeria, prévia ou estado vazio.
+
+Sem `PRODUCT.md`, `DESIGN.md` e design system no `frontend/`, nenhuma tela nova é implementada. Issue de interface sem a label `ui` recebe a label antes do início.
+
 ## 10. Comandos
 
 Válidos a partir da S0. Antes disso, consultar o `README.md`.
@@ -197,3 +207,4 @@ Meta de desempenho: análise de 1 h de vídeo concluída em 20–35 min.
 - [ ] Sem segredos ou dados pessoais; isolamento por `user_id`.
 - [ ] Funcionamento com provedores externos desativados.
 - [ ] Documentação atualizada apenas se o comportamento observável mudou.
+- [ ] Tarefa de interface: seção 9.1 cumprida, com capturas, métricas e achados P0/P1 e CRÍTICO/ALTO zerados.

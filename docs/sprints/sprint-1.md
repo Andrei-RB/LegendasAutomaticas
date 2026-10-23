@@ -42,7 +42,7 @@
 
 **Aceite:** um ID inventado pela IA é rejeitado (teste com mock).
 
-<!-- issue: [S1] API e telas: enviar, análise, galeria, editor mínimo | labels: backend, frontend, sprint-1 -->
+<!-- issue: [S1] API e telas: enviar, análise, galeria, editor mínimo | labels: backend, frontend, sprint-1, ui -->
 **Objetivo:** permitir usar o fluxo pela interface.
 
 - [ ] Telas: Enviar (perfil, duração, N) e Análise (etapas ao vivo + notificação do navegador).

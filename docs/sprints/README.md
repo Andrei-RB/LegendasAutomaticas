@@ -24,6 +24,8 @@ A Action `.github/workflows/sincronizar-github.yml` lê estes arquivos e sincron
 - Rodar manualmente: aba **Actions → Sincronizar GitHub com as Sprints → Run workflow**.
 - Rodar localmente: `GITHUB_TOKEN=... python scripts/sincronizar_github.py --repo <dono>/<repositorio>` (use `--dry-run` para conferir antes).
 
+Labels de área: `ui` marca a tarefa que cria ou altera interface. A sincronização anexa ao corpo dessas issues o conteúdo de [`bloco-ui.md`](bloco-ui.md), que remete a [`../protocolo-frontend.md`](../protocolo-frontend.md). Para alterar a regra de interface, edite esses dois arquivos, nunca o corpo de cada issue.
+
 Marcadores nos arquivos: `<!-- epic: Título | labels: ... -->` e `<!-- issue: Título | labels: ... -->`. Não mude o título de uma issue que já existe, porque a sincronização encontra as issues pelo título.
 
 - A sincronização roda apenas em push na `main`. O conteúdo dos arquivos é a fonte do corpo das issues.

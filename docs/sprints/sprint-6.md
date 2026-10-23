@@ -26,7 +26,7 @@
 
 **Aceite:** a segunda análise do mesmo nicho não chama o Claude.
 
-<!-- issue: [S6] Tela de postagens (abas por plataforma) | labels: frontend, sprint-6 -->
+<!-- issue: [S6] Tela de postagens (abas por plataforma) | labels: frontend, sprint-6, ui -->
 **Objetivo:** copiar o texto pronto rapidamente.
 
 - [ ] Abas editáveis, com contador e limite de caracteres.
@@ -35,7 +35,7 @@
 
 **Aceite:** o botão copiar funciona também no celular.
 
-<!-- issue: [S6] Entrada por link YouTube/Twitch (yt-dlp) | labels: backend, frontend, sprint-6 -->
+<!-- issue: [S6] Entrada por link YouTube/Twitch (yt-dlp) | labels: backend, frontend, sprint-6, ui -->
 **Objetivo:** analisar um vídeo a partir de um link.
 
 - [ ] Baixar com yt-dlp, com aviso de direitos autorais aceito e registrado.
@@ -43,7 +43,7 @@
 
 **Aceite:** um link de vídeo próprio é processado como upload.
 
-<!-- issue: [S6] Gerar mais, buscar por tema e momento favorito | labels: cortes, backend, frontend, sprint-6 -->
+<!-- issue: [S6] Gerar mais, buscar por tema e momento favorito | labels: cortes, backend, frontend, sprint-6, ui -->
 **Objetivo:** dar alternativas quando os cortes não agradam.
 
 - [ ] "Gerar mais": próximos candidatos, sem repetir os já vistos.
@@ -52,7 +52,7 @@
 
 **Aceite:** nenhuma das três opções reprocessa o vídeo.
 
-<!-- issue: [S6] Exportação em lote | labels: render, frontend, sprint-6 -->
+<!-- issue: [S6] Exportação em lote | labels: render, frontend, sprint-6, ui -->
 **Objetivo:** exportar vários cortes de uma vez.
 
 - [ ] Selecionar vários cortes, aplicar o mesmo modelo e enfileirar.
@@ -70,7 +70,7 @@
 
 **Aceite:** o editor escolhe apenas `ajuste_id`; nenhum tempo vem de LLM e os validadores passam de novo.
 
-<!-- issue: [S6] Publicações e métricas manuais | labels: backend, frontend, sprint-6 -->
+<!-- issue: [S6] Publicações e métricas manuais | labels: backend, frontend, sprint-6, ui -->
 **Objetivo:** registrar publicações e métricas digitadas para medir a relação com a nota.
 
 - [ ] Tabelas `publicacoes` e `metricas_publicacao`, com `user_id` e consultas filtradas por usuário.

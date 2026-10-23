@@ -31,14 +31,14 @@
 
 **Aceite:** um teste com datas "envelhecidas" apaga os arquivos certos.
 
-<!-- issue: [S7] Assistente de primeiro uso | labels: frontend, backend, sprint-7 -->
+<!-- issue: [S7] Assistente de primeiro uso | labels: frontend, backend, sprint-7, ui -->
 **Objetivo:** instalar sem sofrimento.
 
 - [ ] Passos: testar a GPU → `ollama pull` com barra (SSE) → validar o token do Claude, a chave do Gemini e o `HF_TOKEN` → criar usuário.
 
 **Aceite:** numa máquina limpa, o assistente chega ao fim sem editar arquivos.
 
-<!-- issue: [S7] Saúde do sistema e configurações pela tela | labels: frontend, backend, sprint-7 -->
+<!-- issue: [S7] Saúde do sistema e configurações pela tela | labels: frontend, backend, sprint-7, ui -->
 **Objetivo:** ver e configurar tudo pela interface.
 
 - [ ] `/saude`: GPU, Ollama, tokens e disco, cada item com "como resolver".
@@ -55,7 +55,7 @@
 
 **Aceite:** o checklist de segurança está documentado nesta issue.
 
-<!-- issue: [S7] Editor: atalhos, desfazer/refazer e celular | labels: frontend, sprint-7 -->
+<!-- issue: [S7] Editor: atalhos, desfazer/refazer e celular | labels: frontend, sprint-7, ui -->
 **Objetivo:** produtividade no PC e acesso pelo celular.
 
 - [ ] Atalhos: Espaço, I/O, J/K/L, ←/→, Ctrl+Z e Ctrl+Shift+Z.
