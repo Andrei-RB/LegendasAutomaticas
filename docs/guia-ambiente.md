@@ -51,7 +51,7 @@ O arquivo `infra/.env` não é versionado.
 | Serviço | Função | Porta no host |
 |---|---|---|
 | `api` | FastAPI | 127.0.0.1:8000 |
-| `frontend` | Página provisória até a S0 entregar a interface | 127.0.0.1:8080 |
+| `frontend` | Interface (SPA servida por nginx) e proxy de `/api` para a `api` | 127.0.0.1:8080 |
 | `worker-gpu` | Fila `gpu` (ASR, NVENC); concorrência 1 | — |
 | `worker-cpu` | Filas `cpu` e `celery` (fluxo atual de legendas) | — |
 | `worker-ai` | Fila `ai` (provedores externos) | — |
