@@ -134,14 +134,14 @@ def validar_token(token: str, segredo: str) -> SessaoToken:
         raise TokenInvalido from erro
 
 
-def _chave_revogacao(jti: str) -> str:
+def chave_revogacao(jti: str) -> str:
     return f"revogado:{jti}"
 
 
 def revogar(cliente: Redis, sessao: SessaoToken) -> None:
     ttl = max(1, sessao.expira_em - int(time.time()))
-    cliente.set(_chave_revogacao(sessao.jti), 1, ex=ttl)
+    cliente.set(chave_revogacao(sessao.jti), 1, ex=ttl)
 
 
 def esta_revogado(cliente: Redis, jti: str) -> bool:
-    return bool(cliente.exists(_chave_revogacao(jti)))
+    return bool(cliente.exists(chave_revogacao(jti)))

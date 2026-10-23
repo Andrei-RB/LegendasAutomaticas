@@ -153,7 +153,7 @@ def ambiente(motor_auth, redis_teste, monkeypatch) -> Iterator[Ambiente]:
 
     from app.main import app
     from app.nucleo.config_auth import config_auth as settings
-    from app.nucleo.dependencias import obter_redis, obter_sessao
+    from app.nucleo.dependencias import obter_fabrica_sessao, obter_redis, obter_sessao
 
     monkeypatch.setattr(settings, "COOKIE_SECURE", False)
     monkeypatch.setattr(settings, "PERMITIR_CADASTRO", False)
@@ -167,6 +167,7 @@ def ambiente(motor_auth, redis_teste, monkeypatch) -> Iterator[Ambiente]:
             yield sessao
 
     app.dependency_overrides[obter_sessao] = _sessao
+    app.dependency_overrides[obter_fabrica_sessao] = lambda: fabrica
     app.dependency_overrides[obter_redis] = lambda: redis_teste
     yield Ambiente(app=app, motor=motor_auth, redis=redis_teste)
     app.dependency_overrides.clear()

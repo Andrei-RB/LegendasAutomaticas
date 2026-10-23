@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from app.api.v1.analises import router as roteador_analises
 from app.api.v1.auth import router as roteador_auth
 from app.api.v1.endpoints import router as roteador_v1
 from app.nucleo.autenticacao import Sobrecarregado
@@ -40,3 +41,4 @@ async def health() -> JSONResponse:
 
 app.include_router(roteador_auth, prefix=settings.API_V1_STR)
 app.include_router(roteador_v1, prefix=settings.API_V1_STR)
+app.include_router(roteador_analises, prefix=settings.API_V1_STR)
