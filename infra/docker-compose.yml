@@ -24,6 +24,7 @@ x-ambiente-app: &ambiente-app
   DATABASE_URL: postgresql+psycopg://viraliza_app:${POSTGRES_APP_PASSWORD:?defina POSTGRES_APP_PASSWORD em infra/.env}@postgres:5432/viraliza
   UPLOAD_DIR: /dados/uploads
   OUTPUT_DIR: /dados/saidas
+  DADOS_DIR: /dados/usuarios
   LOG_DIR: /tmp/logs
   HF_HOME: /dados/hf
   CORS_ORIGINS: http://127.0.0.1:8080,http://localhost:8080

@@ -1,6 +1,6 @@
 import os
 
-from pydantic import SecretStr
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,6 +19,13 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = "uploads"
     OUTPUT_DIR: str = "outputs"
     LOG_DIR: str = "logs"
+
+    DADOS_DIR: str = "dados"
+
+    SSE_HEARTBEAT_S: float = Field(default=15, gt=0)
+    SSE_DURACAO_MAX_S: float = Field(default=5400, gt=0)
+    SSE_MAX_POR_USUARIO: int = Field(default=5, ge=1)
+    SSE_MAX_GLOBAL: int = Field(default=50, ge=1)
 
     MAX_UPLOAD_SIZE: int = 1024 * 1024 * 1024
     ALLOWED_EXTENSIONS: str = ".mp4,.avi,.mov,.mkv"

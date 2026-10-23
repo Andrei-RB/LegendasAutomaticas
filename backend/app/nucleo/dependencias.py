@@ -1,7 +1,8 @@
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from functools import lru_cache
 from typing import Annotated
 
+import redis.asyncio
 from fastapi import Depends, HTTPException, Request, status
 from redis import Redis
 from redis.exceptions import RedisError
@@ -32,6 +33,10 @@ def _cliente_redis() -> Redis:
     )
 
 
+def obter_fabrica_sessao() -> sessionmaker[Session]:
+    return _fabrica()
+
+
 def obter_sessao() -> Iterator[Session]:
     with _fabrica()() as sessao:
         yield sessao
@@ -39,6 +44,20 @@ def obter_sessao() -> Iterator[Session]:
 
 def obter_redis() -> Redis:
     return _cliente_redis()
+
+
+def obter_fabrica_redis_assincrono() -> Callable[[], redis.asyncio.Redis]:
+    """Cada fluxo SSE usa um cliente próprio, fechado no fim, pois o pub/sub prende a conexão."""
+
+    def _criar() -> redis.asyncio.Redis:
+        return redis.asyncio.Redis.from_url(
+            settings.REDIS_URL,
+            socket_timeout=None,
+            socket_connect_timeout=TIMEOUT_REDIS_S,
+            health_check_interval=30,
+        )
+
+    return _criar
 
 
 def nao_autenticado() -> HTTPException:
