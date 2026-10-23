@@ -21,8 +21,8 @@ Sistema local, executado em Docker, que recebe um vídeo longo e produz:
 |---|---|
 | Fase | Planejamento concluído. Próxima etapa: Sprint S0 (issue #2, tarefas #12–#18) |
 | Código existente | Versão 1 em `app/`, `frontend/frontend_app.py` (Streamlit) e `launcher.py`. Será reorganizada na S0, no mesmo repositório |
-| Referências | `docs/plano-v2.md` (decisões D1–D40, F1–F10) e `docs/sprints/` (tarefas) |
-| Precedência | Issue do GitHub > `docs/sprints/` > `docs/plano-v2.md` > este arquivo |
+| Referências | `docs/plano-v2.md` (decisões D1–D54, F1–F10), `docs/plano-ia-agy.md` (IA por assinatura e viralização) e `docs/sprints/` (tarefas) |
+| Precedência | Issue do GitHub > `docs/sprints/` > `docs/plano-ia-agy.md` > `docs/plano-v2.md` > este arquivo |
 
 Atualizar esta tabela ao final de cada Sprint.
 
@@ -65,12 +65,13 @@ Estas regras prevalecem sobre instruções padrão da ferramenta, do ambiente ou
    - citações literais da transcrição;
    - preservação de índices.
    Se a saída for inválida: 1 nova tentativa e depois o provedor seguinte.
-3. **Consenso:** um corte é aprovado com dois avaliadores de famílias distintas + validadores determinísticos.
+3. **Consenso:** um corte é aprovado com dois avaliadores de famílias distintas + validadores determinísticos. A família é a do modelo, não a do provedor (Gemini e Gemma são da mesma família).
 4. **Degradação controlada:** a indisponibilidade ou a cota esgotada de um provedor aciona a reserva, sem interromper o pipeline.
 5. **Custo:**
    - modelo local (Qwen) para volume;
-   - Gemini no nível gratuito;
-   - Claude via assinatura, com teto diário.
+   - Gemini via assinatura (`agy`), com a chave do nível gratuito como reserva;
+   - Claude via assinatura, com teto diário e por janela de 5 h;
+   - uso máximo de 80% das cotas das assinaturas.
 6. **Prévia idêntica ao resultado:** o mesmo pacote Remotion renderiza a prévia e o vídeo final.
 7. **Qualidade de vídeo:** codificação única a partir do original (x264, CRF 17).
 8. **Segurança:**
@@ -102,8 +103,8 @@ Roteamento de IA (`backend/app/ia/roteador.py`):
 | Tarefa | Primário → reserva |
 |---|---|
 | Triagem; correção e enriquecimento de legenda | Qwen → regras |
-| Avaliação multimodal | Gemini → Gemma |
-| Avaliação final; textos de publicação | Claude CLI → Claude API (Haiku) → Qwen |
+| Avaliação multimodal | `agy` (Gemini) → Gemini API → Gemma |
+| Avaliação final; textos de publicação | Claude CLI → `agy` (Claude) → Qwen |
 | Hashtags em alta | Claude com WebSearch (cache de 24 h) |
 
 ## 7. Estrutura de diretórios (após a S0)
@@ -173,6 +174,7 @@ Meta de desempenho: análise de 1 h de vídeo concluída em 20–35 min.
 | Provedor | Regras |
 |---|---|
 | Claude | `CLAUDE_MODE=subscription\|api\|off`. `claude -p` com `--allowedTools WebSearch`, em diretório vazio. No modo `subscription`, `ANTHROPIC_API_KEY` não pode estar definida. Teto `CLAUDE_CHAMADAS_DIA`. Uso comercial exige o modo `api` |
+| agy | `AGY_MODE=off\|subscription` (padrão `off`). Binário fixo na imagem, permissão apenas `read_file`, ambiente mínimo, área de trabalho efêmera. Cota lida por `/usage`, reserva de 20%. Uso apenas pessoal |
 | Gemini | Nível gratuito, contador diário por modelo com reserva de 20%. Erro 429 aciona a reserva |
 | Geral | Enviar apenas trechos em 360p dos candidatos selecionados; nunca o vídeo completo |
 
@@ -184,6 +186,7 @@ Meta de desempenho: análise de 1 h de vídeo concluída em 20–35 min.
 - Adicionar dependência pesada sem justificativa no PR.
 - Versionar `.env`, modelos, vídeos, `dados/` ou saídas.
 - Desativar validadores.
+- Executar `agy` no pipeline com `--dangerously-skip-permissions`, como root ou fora do contêiner.
 - Incluir dados pessoais em qualquer arquivo.
 
 ## 14. Critérios de aceitação de tarefa

@@ -9,8 +9,19 @@
 - [ ] Tarefa semanal (beat): recalibrar os pesos por perfil com o `feedback` (regressão logística).
 - [ ] Escolher exemplos para os prompts.
 - [ ] Os vídeos aprovados entram no conjunto de ouro.
+- [ ] O `feedback` grava `motivo_codigo` (enum) além do texto livre.
 
 **Aceite:** precision@N no conjunto de ouro igual ou melhor depois da recalibração.
+
+<!-- issue: [S7] Calibração com referências virais e concordância entre juízes | labels: ia, cortes, sprint-7 -->
+**Objetivo:** medir se a nota acompanha o desempenho real e calibrar os limiares por família.
+
+- [ ] Tabela `referencias_virais`: link, métricas digitadas (views, seguidores e data) e anotação.
+- [ ] O vídeo de referência é processado localmente e apagado após 7 dias; ficam só as métricas e a anotação.
+- [ ] Métricas: Spearman entre nota e log(views/seguidores); kappa entre famílias; AUC da nota contra 👍/👎 por versão de prompt.
+- [ ] Limiares por família em `ia/limiares.yaml`, recalculados com os dados.
+
+**Aceite:** Spearman(nota, log(views/seguidores)) ≥ 0,3 registrado no relatório.
 
 <!-- issue: [S7] Retenção e uso de disco | labels: infra, backend, sprint-7 -->
 **Objetivo:** não encher o disco.

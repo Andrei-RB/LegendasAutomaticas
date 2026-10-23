@@ -42,7 +42,7 @@ React (Vite) ──► FastAPI ──► Redis/Celery ──► workers: gpu | c
 | Legendas | 4 modos, 8 modelos, editor visual, Remotion (prévia = vídeo final) |
 | Idioma | Tudo em PT-BR (código e docs). Docs curtas |
 
-O plano completo, com as decisões D1–D40 e F1–F10, está em `docs/plano-v2.md`.
+O plano completo, com as decisões D1–D54 e F1–F10, está em `docs/plano-v2.md`; IA por assinatura e viralização em `docs/plano-ia-agy.md`.
 
 ## Sprints
 
@@ -52,6 +52,7 @@ O plano completo, com as decisões D1–D40 e F1–F10, está em `docs/plano-v2.
 | S1 | Fatia vertical: vídeo → cortes → legenda → MP4 + SRT |
 | S2 | Sinais ricos e perfis + conjunto de ouro |
 | S3 | Roteador de IA, juízes e consenso |
+| S3 (spike agy) | Spike do Antigravity CLI (`agy`) no worker-ai, com go/no-go antes do provedor |
 | S4 | Câmera virtual (seguir o rosto e quem fala) |
 | S5a | Legendas: precisão e inteligência |
 | S5b | Legendas: modelos virais e editor |

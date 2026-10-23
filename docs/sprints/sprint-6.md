@@ -21,6 +21,8 @@
 - [ ] `claude -p` com WebSearch por nicho.
 - [ ] Cache de 24 h em `cache_hashtags`.
 - [ ] Juntar com a lista fixa do usuário.
+- [ ] Temas em alta por nicho: a triagem devolve `temas_ids`; o código confirma a palavra-chave no texto do corte.
+- [ ] Temas têm peso 0,5 e ficam fora do consenso dos juízes.
 
 **Aceite:** a segunda análise do mesmo nicho não chama o Claude.
 
@@ -57,3 +59,23 @@
 - [ ] Mostrar o progresso de cada um.
 
 **Aceite:** 5 cortes exportados em fila, sem travar a interface.
+
+<!-- issue: [S6] Sugestões a partir de quase-aprovados | labels: ia, cortes, sprint-6 -->
+**Objetivo:** transformar cortes quase aprovados em opções de ajuste.
+
+- [ ] Quase-aprovado: nota a até `IA_QUASE_MARGEM` (padrão 1,0) do limiar.
+- [ ] O código gera opções de ajuste por ID: variantes, deslocamento de 1 a 3 frases e limites de cena.
+- [ ] O editor escolhe um `ajuste_id`; o sistema cria um candidato com `origem=ajuste` e `candidato_pai_id`, exibido em "Sugestões".
+- [ ] Os validadores rodam de novo sobre o candidato criado.
+
+**Aceite:** o editor escolhe apenas `ajuste_id`; nenhum tempo vem de LLM e os validadores passam de novo.
+
+<!-- issue: [S6] Publicações e métricas manuais | labels: backend, frontend, sprint-6 -->
+**Objetivo:** registrar publicações e métricas digitadas para medir a relação com a nota.
+
+- [ ] Tabelas `publicacoes` e `metricas_publicacao`, com `user_id` e consultas filtradas por usuário.
+- [ ] `Protocol ColetorMetricas` com a implementação `ColetorManual`; coletores por API ficam no backlog.
+- [ ] Validação de faixas: valores não negativos e retenção entre 0 e 100%.
+- [ ] Tela para digitar as métricas de cada publicação.
+
+**Aceite:** valores fora da faixa são rejeitados pela API e pela interface.
