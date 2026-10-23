@@ -34,21 +34,26 @@ def _resultado(estado, info=None):
         ("STARTED", None, {"status": "STARTED", "progress": 0}),
     ],
 )
-def test_status_cobre_os_estados_da_tarefa(cliente, monkeypatch, estado, info, esperado):
+def test_status_cobre_os_estados_da_tarefa(
+    usuario_logado, registrar_video, monkeypatch, estado, info, esperado
+):
     monkeypatch.setattr(process_video_task, "AsyncResult", _resultado(estado, info))
-    resposta = cliente.get(f"/api/v1/status/{uuid.uuid4()}")
+    job_id = str(uuid.uuid4())
+    registrar_video(usuario_logado.id, job_id)
+    resposta = usuario_logado.cliente.get(f"/api/v1/status/{job_id}")
     assert resposta.status_code == 200
     corpo = resposta.json()
     assert {chave: corpo[chave] for chave in esperado} == esperado
 
 
-def test_download_devolve_o_srt_existente(cliente):
+def test_download_devolve_o_srt_existente(usuario_logado, registrar_video):
     job_id = str(uuid.uuid4())
+    registrar_video(usuario_logado.id, job_id)
     caminho = os.path.join(settings.OUTPUT_DIR, f"{job_id}.srt")
     with open(caminho, "w", encoding="utf-8") as arquivo:
         arquivo.write("1\n00:00:00,000 --> 00:00:01,000\nOlá\n\n")
 
-    resposta = cliente.get(f"/api/v1/download/{job_id}")
+    resposta = usuario_logado.cliente.get(f"/api/v1/download/{job_id}")
 
     assert resposta.status_code == 200
     assert "Olá" in resposta.text
@@ -135,18 +140,20 @@ def test_meta_de_falha_e_legivel_pelo_celery():
     assert MENSAGEM_FALHA in str(resultado.info)
 
 
-def test_status_de_falha_nao_expoe_detalhe_interno(cliente, monkeypatch):
+def test_status_de_falha_nao_expoe_detalhe_interno(usuario_logado, registrar_video, monkeypatch):
     info = RuntimeError("erro em C:/interno/segredo.mp4")
     monkeypatch.setattr(process_video_task, "AsyncResult", _resultado("FAILURE", info))
+    job_id = str(uuid.uuid4())
+    registrar_video(usuario_logado.id, job_id)
 
-    corpo = cliente.get(f"/api/v1/status/{uuid.uuid4()}").json()
+    corpo = usuario_logado.cliente.get(f"/api/v1/status/{job_id}").json()
 
     assert corpo["error"] == MENSAGEM_FALHA
     assert "segredo" not in str(corpo)
 
 
-def test_status_com_identificador_invalido_retorna_400(cliente):
-    assert cliente.get("/api/v1/status/nao-e-um-uuid").status_code == 400
+def test_status_com_identificador_invalido_retorna_400(cliente_logado):
+    assert cliente_logado.get("/api/v1/status/nao-e-um-uuid").status_code == 400
 
 
 def test_tarefa_recusa_arquivo_de_outro_job_e_job_id_invalido(monkeypatch):

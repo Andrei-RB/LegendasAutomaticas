@@ -99,7 +99,7 @@ def test_resposta_413_tambem_traz_cabecalhos_de_seguranca(cliente, monkeypatch):
     assert resposta.headers["x-content-type-options"] == "nosniff"
 
 
-def test_corpo_chunked_acima_do_limite_retorna_413(cliente, monkeypatch):
+def test_corpo_chunked_acima_do_limite_retorna_413(cliente_logado, monkeypatch):
     monkeypatch.setattr(settings, "MAX_UPLOAD_SIZE", 1 * MB)
 
     def corpo():
@@ -107,10 +107,13 @@ def test_corpo_chunked_acima_do_limite_retorna_413(cliente, monkeypatch):
         for _ in range(4):
             yield b"0" * (512 * 1024)
 
-    resposta = cliente.post(
+    resposta = cliente_logado.post(
         "/api/v1/upload-video",
         content=corpo(),
-        headers={"Content-Type": "multipart/form-data; boundary=x"},
+        headers={
+            "Content-Type": "multipart/form-data; boundary=x",
+            "Origin": "http://localhost:8501",
+        },
     )
 
     assert resposta.status_code == 413

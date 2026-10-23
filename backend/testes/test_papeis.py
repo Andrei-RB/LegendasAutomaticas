@@ -127,7 +127,10 @@ def test_papel_executa_dml_em_usuarios_e_videos(motor_papel):
     motor = motor_papel()
     with motor.connect() as con:
         user_id = con.execute(
-            text("INSERT INTO usuarios (nome_usuario) VALUES ('ana') RETURNING id")
+            text(
+                "INSERT INTO usuarios (nome_usuario, email, senha_hash) "
+                "VALUES ('ana', 'ana@exemplo.com', '$argon2id$hash-de-teste') RETURNING id"
+            )
         ).scalar()
         con.execute(
             text(
@@ -442,7 +445,8 @@ def test_gatilho_de_exportacao_funciona_com_o_papel_restrito(banco_migrado, pape
     aplicar()
     dono = criar_motor(banco_migrado)
     with Session(dono) as s:
-        a, b = Usuario(nome_usuario="gat_a"), Usuario(nome_usuario="gat_b")
+        a = Usuario(nome_usuario="gat_a", email="gat_a@exemplo.com", senha_hash="$argon2id$x")
+        b = Usuario(nome_usuario="gat_b", email="gat_b@exemplo.com", senha_hash="$argon2id$x")
         s.add_all([a, b])
         s.flush()
         video = Video(user_id=a.id, origem="arquivo", caminho_original="/dados/v.mp4")

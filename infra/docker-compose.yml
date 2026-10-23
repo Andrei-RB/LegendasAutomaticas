@@ -68,6 +68,9 @@ services:
     environment:
       <<: *ambiente-app
       JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET em infra/.env}
+      JWT_EXPIRA_MINUTOS: ${JWT_EXPIRA_MINUTOS:-480}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      PERMITIR_CADASTRO: ${PERMITIR_CADASTRO:-false}
     ports:
       - "127.0.0.1:8000:8000"
     networks: [interna, externa]

@@ -95,7 +95,12 @@ def _viola(sessao: Session, restricao: str):
 def _criar_usuario(sessao: Session, nome: str = "usuario_a"):
     from app.modelos import Usuario
 
-    usuario = Usuario(nome_usuario=f"{nome}_{uuid.uuid4().hex[:8]}")
+    sufixo = uuid.uuid4().hex[:8]
+    usuario = Usuario(
+        nome_usuario=f"{nome}_{sufixo}",
+        email=f"{nome}_{sufixo}@exemplo.com",
+        senha_hash="$argon2id$hash-de-teste",
+    )
     sessao.add(usuario)
     sessao.flush()
     return usuario
