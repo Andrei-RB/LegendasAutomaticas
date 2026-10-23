@@ -4,7 +4,7 @@ set -u
 cd "$(dirname "$0")/.."
 
 COMPOSE=(docker compose -f infra/docker-compose.yml)
-OBRIGATORIAS=(POSTGRES_PASSWORD SENHA_REDIS JWT_SECRET)
+OBRIGATORIAS=(POSTGRES_PASSWORD POSTGRES_APP_PASSWORD SENHA_REDIS JWT_SECRET)
 falhas=0
 PY=python3
 $PY -c "" 2>/dev/null || PY=python
@@ -54,7 +54,7 @@ for nome, s in cfg["services"].items():
             erros.append(f"{nome}: {chave}=host")
     if any("unconfined" in o for o in s.get("security_opt", [])):
         erros.append(f"{nome}: security_opt unconfined")
-    if not s.get("healthcheck"):
+    if not s.get("healthcheck") and s.get("restart") != "no":
         erros.append(f"{nome}: sem healthcheck")
     if not s.get("mem_limit") and not s.get("deploy", {}).get("resources", {}).get("limits", {}).get("memory"):
         erros.append(f"{nome}: sem limite de memória")
@@ -68,7 +68,7 @@ for nome, s in cfg["services"].items():
     for v in s.get("volumes", []):
         if v.get("type") == "bind":
             erros.append(f"{nome}: bind mount {v.get('source')}")
-for nome in ("api", "worker-gpu", "worker-cpu", "worker-ai", "beat", "redis", "postgres", "ollama", "render", "frontend"):
+for nome in ("migrar", "api", "worker-gpu", "worker-cpu", "worker-ai", "beat", "redis", "postgres", "ollama", "render", "frontend"):
     if nome not in cfg["services"]:
         erros.append(f"serviço ausente: {nome}")
 for nome in ("worker-gpu", "ollama"):
@@ -79,6 +79,12 @@ for nome in ("worker-gpu", "ollama"):
     caps = s.get("environment", {}).get("NVIDIA_DRIVER_CAPABILITIES", "")
     if "video" not in caps.split(","):
         erros.append(f"{nome}: NVIDIA_DRIVER_CAPABILITIES sem video")
+for nome, s in cfg["services"].items():
+    url = s.get("environment", {}).get("DATABASE_URL", "")
+    usuario = url.split("://", 1)[-1].split(":", 1)[0] if url else ""
+    esperado = "viraliza" if nome == "migrar" else "viraliza_app" if url else ""
+    if usuario != esperado:
+        erros.append(f"{nome}: DATABASE_URL deve usar o papel '{esperado or 'nenhum'}'")
 env_ollama = cfg["services"].get("ollama", {}).get("environment", {})
 if env_ollama.get("OLLAMA_KEEP_ALIVE") != "0" or env_ollama.get("OLLAMA_MAX_LOADED_MODELS") != "1":
     erros.append("ollama: KEEP_ALIVE=0 e MAX_LOADED_MODELS=1 obrigatórios")
