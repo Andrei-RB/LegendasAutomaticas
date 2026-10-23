@@ -1,3 +1,4 @@
+import contextlib
 import os
 import shutil
 import uuid
@@ -20,6 +21,11 @@ def _validar_job_id(job_id: str) -> None:
     if not job_id_valido(job_id):
         logger.warning(f"Identificador inválido: {job_id[:64]!r}")
         raise HTTPException(status_code=400, detail="ID Invalido")
+
+
+def _remover_arquivo(caminho: str) -> None:
+    with contextlib.suppress(FileNotFoundError):
+        os.remove(caminho)
 
 
 def _gravar_arquivo(origem: BinaryIO, caminho: str) -> None:
@@ -55,8 +61,7 @@ async def upload_video(file: Annotated[UploadFile, File()]):
         logger.info(f"Tarefa criada: {tarefa.id}")
     except Exception as erro:
         logger.error(f"Falha ao enfileirar a tarefa (Redis indisponível?): {erro}")
-        if os.path.exists(caminho):
-            os.remove(caminho)
+        await run_in_threadpool(_remover_arquivo, caminho)
         raise HTTPException(status_code=503, detail="Fila de processamento offline.") from erro
 
     return JobResponse(
@@ -100,7 +105,7 @@ async def download_srt(job_id: str):
     _validar_job_id(job_id)
 
     caminho_srt = os.path.join(settings.OUTPUT_DIR, f"{job_id}.srt")
-    if not os.path.exists(caminho_srt):
+    if not await run_in_threadpool(os.path.exists, caminho_srt):
         raise HTTPException(
             status_code=404, detail="Arquivo de legenda não encontrado ou não finalizado."
         )
