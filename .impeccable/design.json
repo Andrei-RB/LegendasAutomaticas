@@ -188,18 +188,18 @@
       }
     ],
     "dos": [
-      "Do usar `transform` e `opacity` em qualquer animação, com duração curta, e respeitar `prefers-reduced-motion`.",
-      "Do manter foco visível e operação completa por teclado em todo controle.",
-      "Do mostrar estados vazio, carregando, erro e sucesso em toda tela.",
-      "Do reservar o laranja ao ativo, à ação primária e ao foco.",
-      "Do manter o mesmo pacote de renderização para a prévia e o vídeo final quando a legenda entrar no frontend."
+      "Fazer: usar `transform` e `opacity` em qualquer animação, com duração curta, e respeitar `prefers-reduced-motion`.",
+      "Fazer: manter foco visível e operação completa por teclado em todo controle.",
+      "Fazer: mostrar estados vazio, carregando, erro e sucesso em toda tela.",
+      "Fazer: reservar o laranja ao ativo, à ação primária e ao foco.",
+      "Fazer: manter o mesmo pacote de renderização para a prévia e o vídeo final quando a legenda entrar no frontend."
     ],
     "donts": [
-      "Don't usar cartão centralizado genérico como composição de tela. A tela de login atual ainda o usa e deve ser redesenhada na etapa de marca.",
-      "Don't usar gradiente roxo, nem gradientes decorativos.",
-      "Don't usar ícones decorativos sem função; ícone só substitui texto quando há `aria-label`.",
-      "Don't usar animação que atrase o trabalho: nada de transição que bloqueie a próxima ação.",
-      "Don't introduzir sombras, cartões aninhados ou uma segunda cor de destaque."
+      "Não fazer: usar cartão centralizado genérico como composição de tela. A tela de login atual ainda o usa e deve ser redesenhada na etapa de marca.",
+      "Não fazer: usar gradiente roxo, nem gradientes decorativos.",
+      "Não fazer: usar ícones decorativos sem função; ícone só substitui texto quando há `aria-label`.",
+      "Não fazer: usar animação que atrase o trabalho: nada de transição que bloqueie a próxima ação.",
+      "Não fazer: introduzir sombras, cartões aninhados ou uma segunda cor de destaque."
     ]
   }
 }
