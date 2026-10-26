@@ -1,5 +1,7 @@
 # 🎬 LegendasAutomáticas
 
+[![CI](https://github.com/Andrei-RB/LegendasAutomaticas/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Andrei-RB/LegendasAutomaticas/actions/workflows/ci.yml)
+
 > 🚧 **v2 em construção:** o projeto está evoluindo para um estúdio de cortes virais com legendas e textos de postagem. Veja o [roadmap](docs/sprints/00-roadmap.md) e o [plano](docs/plano-v2.md). A reorganização em monorepo (`backend/`) está concluída; a interface web será recriada na issue #17, e o ambiente Docker está descrito em [docs/guia-ambiente.md](docs/guia-ambiente.md). O conteúdo abaixo descreve a v1 atual.
 
 > 🔒 **Antes do primeiro commit:** rode `bash scripts/instalar_hooks.sh`. Regras de autoria em [CLAUDE.md](CLAUDE.md), seção 4.1.
