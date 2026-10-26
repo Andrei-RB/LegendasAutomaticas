@@ -100,7 +100,7 @@ Os valores acima descrevem a implementação existente em `frontend/src/estilos.
 
 ## 1. Visão geral
 
-**Creative North Star: "A Mesa de Edição"**
+**Norte criativo: "A Mesa de Edição"**
 
 A aplicação é uma bancada de trabalho: superfícies escuras e neutras, texto de alto contraste e um único acento laranja que marca apenas o que está ativo ou é a próxima ação. A interface recua para que o vídeo e a transcrição ocupem o primeiro plano. Prioridade: fluidez e clareza, para quem revisa muitos cortes por dia.
 
@@ -108,7 +108,7 @@ Referências de comportamento, confirmadas pela direção do produto: a resposta
 
 Rejeições confirmadas: cartão centralizado genérico, gradiente roxo, ícones decorativos sem função e animações que atrasem o trabalho.
 
-**Key Characteristics:**
+**Características principais:**
 - Tema escuro por padrão; tema claro equivalente, com os mesmos papéis de cor.
 - Neutros levemente quentes (matiz 60–80) e um acento laranja; nenhuma segunda cor de destaque.
 - Superfícies planas, separadas por filete de 1 px, sem sombra.
@@ -140,7 +140,7 @@ Neutros quentes com um acento laranja de baixa frequência. Todos os valores em 
 
 **Fonte de interface:** pilha do sistema (`ui-sans-serif`, `system-ui`, Segoe UI, Roboto, Arial). Sem fonte própria hoje.
 
-**Character:** neutra e nativa; a identidade vem do peso e do espaçamento, não da família. A fonte de destaque da marca (login e landing) está em aberto.
+**Caráter:** neutra e nativa; a identidade vem do peso e do espaçamento, não da família. A fonte de destaque da marca (login e landing) está em aberto.
 
 ### 3.1 Hierarquia
 - **Título** (600, 1,5 rem, 1,33, tracking −0,025 em): título de página e do formulário.
@@ -171,21 +171,21 @@ Cantos suaves e consistentes: 0,5 rem em botões, campos e itens de menu; 10 px 
 Sóbrios e previsíveis; cada estado é distinguível sem depender só de cor.
 
 ### 7.1 Botões
-- **Shape:** cantos de 0,5 rem, altura de 40 px, padding horizontal de 16 px.
+- **Forma:** cantos de 0,5 rem, altura de 40 px, padding horizontal de 16 px.
 - **Primário:** fundo laranja, texto escuro (escuro) ou claro (claro); hover a 90% de opacidade.
 - **Contorno:** transparente com borda de campo; hover em superfície suave.
 - **Fantasma / ícone:** sem borda; hover em superfície suave; botão de ícone de 40 px sempre com `aria-label`.
 - **Foco:** contorno de 2 px na cor de acento com deslocamento de 2 px. Desabilitado a 60% de opacidade.
 
 ### 7.2 Cartões e contêineres
-- **Corner Style:** 10 px.
-- **Background:** superfície; borda de 1 px no divisor.
-- **Internal Padding:** 24 px.
+- **Estilo de canto:** 10 px.
+- **Fundo:** superfície; borda de 1 px no divisor.
+- **Espaçamento interno:** 24 px.
 
 ### 7.3 Campos
-- **Style:** transparente, borda de campo de 1 px, 40 px de altura, cantos de 0,5 rem.
-- **Focus:** contorno de acento de 2 px.
-- **Error / Disabled:** borda na cor de erro com `aria-invalid` e mensagem com `role="alert"`; desabilitado a 60%.
+- **Estilo:** transparente, borda de campo de 1 px, 40 px de altura, cantos de 0,5 rem.
+- **Foco:** contorno de acento de 2 px.
+- **Erro / desabilitado:** borda na cor de erro com `aria-invalid` e mensagem com `role="alert"`; desabilitado a 60%.
 
 ### 7.4 Navegação
 Barra lateral de 15 rem com marca, lista de itens e rodapé com usuário, tema e saída. Item ativo em superfície suave com texto de acento; hover em superfície suave. Abaixo de `md` vira faixa horizontal.
