@@ -58,6 +58,7 @@ describe.each(Object.entries(temas))("contraste WCAG 2.2 AA (%s)", (_, t) => {
     ["foreground", "background"],
     ["card-foreground", "card"],
     ["muted-foreground", "background"],
+    ["muted-foreground", "card"],
     ["muted-foreground", "muted"],
     ["primary-foreground", "primary"],
     ["destructive-foreground", "destructive"],
