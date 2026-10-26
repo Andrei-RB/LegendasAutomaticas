@@ -125,7 +125,7 @@ Neutros quentes com um acento laranja de baixa frequência. Todos os valores em 
 ### 2.2 Neutras
 - **Fundo Grafite** (`oklch(0.16 0.006 60)`) / **Fundo Papel** (`oklch(0.985 0.002 80)`): fundo da página.
 - **Superfície** (`oklch(0.2 0.007 60)` / `oklch(1 0 0)`): barra lateral e cartões.
-- **Superfície Suave** (`oklch(0.24 0.008 60)` / `oklch(0.955 0.004 80)`): item ativo e hover.
+- **Superfície Suave** (`oklch(0.24 0.008 60)` / `oklch(0.955 0.004 80)`): item ativo e passagem do cursor.
 - **Texto** (`oklch(0.96 0.004 80)` / `oklch(0.2 0.01 60)`) e **Texto Suave** (`oklch(0.72 0.01 70)` / `oklch(0.45 0.01 60)`): texto principal e secundário.
 - **Divisor** (`oklch(0.3 0.008 60)` / `oklch(0.89 0.006 80)`): bordas de cartão e barra lateral; decorativo, sem exigência de contraste.
 - **Borda de Campo** (`oklch(0.54 0.01 60)` / `oklch(0.62 0.008 80)`): contorno de campos e botão de contorno; contraste de 3:1 ou mais contra fundo e superfície, garantido por teste.
@@ -140,7 +140,7 @@ Neutros quentes com um acento laranja de baixa frequência. Todos os valores em 
 
 **Fonte de interface:** pilha do sistema (`ui-sans-serif`, `system-ui`, Segoe UI, Roboto, Arial). Sem fonte própria hoje.
 
-**Caráter:** neutra e nativa; a identidade vem do peso e do espaçamento, não da família. A fonte de destaque da marca (login e landing) está em aberto.
+**Caráter:** neutra e nativa; a identidade vem do peso e do espaçamento, não da família. A fonte de destaque da marca (login e página de apresentação) está em aberto.
 
 ### 3.1 Hierarquia
 - **Título** (600, 1,5 rem, 1,33, tracking −0,025 em): título de página e do formulário.
@@ -172,9 +172,9 @@ Sóbrios e previsíveis; cada estado é distinguível sem depender só de cor.
 
 ### 7.1 Botões
 - **Forma:** cantos de 0,5 rem, altura de 40 px, padding horizontal de 16 px.
-- **Primário:** fundo laranja, texto escuro (escuro) ou claro (claro); hover a 90% de opacidade.
-- **Contorno:** transparente com borda de campo; hover em superfície suave.
-- **Fantasma / ícone:** sem borda; hover em superfície suave; botão de ícone de 40 px sempre com `aria-label`.
+- **Primário:** fundo laranja, texto escuro (escuro) ou claro (claro); passagem do cursor a 90% de opacidade.
+- **Contorno:** transparente com borda de campo; passagem do cursor em superfície suave.
+- **Fantasma / ícone:** sem borda; passagem do cursor em superfície suave; botão de ícone de 40 px sempre com `aria-label`.
 - **Foco:** contorno de 2 px na cor de acento com deslocamento de 2 px. Desabilitado a 60% de opacidade.
 
 ### 7.2 Cartões e contêineres
@@ -188,7 +188,7 @@ Sóbrios e previsíveis; cada estado é distinguível sem depender só de cor.
 - **Erro / desabilitado:** borda na cor de erro com `aria-invalid` e mensagem com `role="alert"`; desabilitado a 60%.
 
 ### 7.4 Navegação
-Barra lateral de 15 rem com marca, lista de itens e rodapé com usuário, tema e saída. Item ativo em superfície suave com texto de acento; hover em superfície suave. Abaixo de `md` vira faixa horizontal.
+Barra lateral de 15 rem com marca, lista de itens e rodapé com usuário, tema e saída. Item ativo em superfície suave com texto de acento; passagem do cursor em superfície suave. Abaixo de `md` vira faixa horizontal.
 
 ## 8. Faça e não faça
 
