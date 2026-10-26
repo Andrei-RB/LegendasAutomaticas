@@ -20,6 +20,13 @@ updates:
     directory: /frontend
     schedule:
       interval: weekly
+    ignore:
+      # O runtime é Node 22; @types/node acompanha a major do Node.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # O openapi-typescript 7 exige typescript 5.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
     open-pull-requests-limit: 5
     commit-message:
       prefix: "chore"
