@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prancha de marca · Viraliza+</title>
+<link rel="icon" href="marca/favicon.svg" type="image/svg+xml">
+<style>
+@font-face {
+  font-family: "Schibsted Grotesk";
+  src: url("fontes/schibsted-grotesk/SchibstedGrotesk-latino.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+:root {
+  --fonte: "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --ease-saida: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-tema="escuro"] {
+  --acento: oklch(0.72 0.19 40);
+  --sobre-acento: oklch(0.17 0.01 40);
+  --fundo: oklch(0.16 0.006 60);
+  --superficie: oklch(0.2 0.007 60);
+  --superficie-suave: oklch(0.24 0.008 60);
+  --texto: oklch(0.96 0.004 80);
+  --texto-suave: oklch(0.72 0.01 70);
+  --divisor: oklch(0.3 0.008 60);
+  --borda-campo: oklch(0.54 0.01 60);
+}
+
+[data-tema="claro"] {
+  --acento: oklch(0.56 0.21 36);
+  --sobre-acento: oklch(0.99 0 0);
+  --fundo: oklch(0.985 0.002 80);
+  --superficie: oklch(1 0 0);
+  --superficie-suave: oklch(0.955 0.004 80);
+  --texto: oklch(0.2 0.01 60);
+  --texto-suave: oklch(0.45 0.01 60);
+  --divisor: oklch(0.89 0.006 80);
+  --borda-campo: oklch(0.62 0.008 80);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--fonte);
+  font-size: 0.875rem;
+  line-height: 1.43;
+  background: var(--fundo);
+  color: var(--texto);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: color-mix(in oklch, var(--acento) 35%, transparent); }
+
+main { max-width: 1120px; margin: 0 auto; padding: 48px 16px 96px; }
+section { margin-top: 64px; }
+h1 { margin: 0; font-size: 1.5rem; line-height: 2rem; font-weight: 600; letter-spacing: -0.02em; }
+h2 { margin: 0 0 16px; font-size: 1.125rem; line-height: 1.75rem; font-weight: 600; letter-spacing: -0.015em; text-wrap: balance; }
+p { margin: 0; max-width: 68ch; }
+.suave { color: var(--texto-suave); }
+.intro { margin-top: 8px; }
+
+.par { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 720px) { .par { grid-template-columns: minmax(0, 1fr); } }
+
+.painel {
+  background: var(--fundo);
+  color: var(--texto);
+  border: 1px solid var(--divisor);
+  border-radius: 12px;
+  padding: 24px;
+  min-width: 0;
+}
+.painel > .nome { color: var(--texto-suave); font-size: 0.75rem; line-height: 1rem; font-weight: 500; margin-bottom: 16px; }
+
+.logo-grande { display: block; height: 56px; width: auto; max-width: 100%; }
+.logo-pequeno { display: block; height: 24px; width: auto; margin-top: 24px; }
+.linha-icones { display: flex; align-items: flex-end; gap: 24px; }
+.linha-icones img { display: block; }
+.aba-favicon {
+  margin-top: 24px; display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px; border-radius: 8px; background: var(--superficie-suave); font-size: 0.75rem;
+}
+
+.espec { display: grid; gap: 24px; }
+.display { font-size: clamp(2rem, 6vw, 3rem); line-height: 1.08; font-weight: 700; letter-spacing: -0.03em; text-wrap: balance; }
+.titulo { font-size: 1.5rem; line-height: 2rem; font-weight: 600; letter-spacing: -0.02em; }
+.numeros { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; font-size: 1.125rem; font-weight: 500; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 8px 0; border-bottom: 1px solid var(--divisor); font-weight: 400; }
+th { color: var(--texto-suave); font-size: 0.75rem; font-weight: 500; }
+td:last-child, th:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+
+.lista { list-style: none; margin: 0; padding: 0; }
+.item {
+  display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 16px;
+  min-height: 40px; padding: 8px 12px; border-radius: 8px;
+}
+.item + .item { margin-top: 2px; }
+.item[aria-current="true"] { background: var(--superficie-suave); }
+.item .tempo { color: var(--texto-suave); font-variant-numeric: tabular-nums; }
+.estado { font-size: 0.75rem; font-weight: 500; padding: 2px 8px; border-radius: 6px; background: var(--superficie-suave); }
+.estado.ok::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: var(--acento); }
+kbd {
+  font: inherit; font-size: 0.75rem; padding: 1px 6px; border-radius: 4px;
+  border: 1px solid var(--divisor); color: var(--texto-suave);
+}
+
+/* Composição do login: uma marcação, duas larguras (container query). */
+.moldura { container-type: inline-size; border: 1px solid var(--divisor); border-radius: 12px; overflow: hidden; padding: 4px; background: var(--fundo); color: var(--texto); }
+.moldura.estreita { max-width: 390px; }
+.login { display: grid; min-height: 520px; }
+.login .marca { padding: 24px; display: flex; flex-direction: column; gap: 24px; }
+.login .marca img { height: 28px; width: auto; align-self: flex-start; }
+.login h3 { margin: 0; font-size: 2rem; line-height: 1.1; font-weight: 700; letter-spacing: -0.03em; text-wrap: balance; max-width: 14ch; }
+.login .marca p { color: var(--texto-suave); font-size: 1rem; line-height: 1.5rem; max-width: 36ch; }
+.linha-tempo { width: 100%; height: auto; margin-top: auto; }
+.lt-trilho { stroke: var(--divisor); stroke-width: 1; }
+.lt-bruto { fill: var(--superficie-suave); }
+.lt-faixa { fill: var(--acento); opacity: 0.16; }
+.lt-corte { fill: var(--acento); }
+.lt-linha { stroke: var(--acento); stroke-width: 1.5; opacity: 0.7; }
+.lt-grupo { animation: entra 640ms var(--ease-saida) both; animation-delay: calc(var(--i) * 90ms + 120ms); }
+@keyframes entra { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .lt-grupo { animation: none; } }
+
+.formulario { padding: 24px; display: flex; flex-direction: column; justify-content: center; gap: 16px; }
+.formulario h4 { margin: 0; font-size: 1.5rem; line-height: 2rem; font-weight: 600; letter-spacing: -0.02em; }
+.campo { display: grid; gap: 6px; }
+.campo label { font-weight: 500; }
+.campo input {
+  font: inherit; height: 40px; padding: 0 12px; color: var(--texto); background: transparent;
+  border: 1px solid var(--borda-campo); border-radius: 8px; width: 100%;
+}
+.botao {
+  font: inherit; font-weight: 500; height: 40px; padding: 0 16px; border: 0; border-radius: 8px;
+  background: var(--acento); color: var(--sobre-acento); cursor: pointer;
+}
+:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+
+@container (min-width: 720px) {
+  .login { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); min-height: 560px; }
+  .login .marca { padding: 40px; }
+  .login h3 { font-size: 3rem; max-width: 16ch; }
+  .formulario { padding: 40px 56px 40px 40px; max-width: 440px; }
+}
+@container (max-width: 719px) {
+  .linha-tempo { max-height: 72px; }
+}
+</style>
+</head>
+<body data-tema="escuro">
+<main>
+  <header>
+    <h1>Prancha de marca · Viraliza+</h1>
+    <p class="suave intro">Proposta da Fase 1 para validação. Nada aqui altera o produto. Dados das listas são exemplos ilustrativos.</p>
+  </header>
+
+  <section aria-labelledby="s-logotipo">
+    <h2 id="s-logotipo">Logotipo</h2>
+    <div class="par">
+      <div class="painel" data-tema="escuro">
+        <div class="nome">Tema escuro</div>
+        <img class="logo-grande" src="marca/logotipo-escuro.svg" alt="Viraliza+">
+        <img class="logo-pequeno" src="marca/logotipo-escuro.svg" alt="">
+      </div>
+      <div class="painel" data-tema="claro">
+        <div class="nome">Tema claro</div>
+        <img class="logo-grande" src="marca/logotipo-claro.svg" alt="Viraliza+">
+        <img class="logo-pequeno" src="marca/logotipo-claro.svg" alt="">
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-simbolo">
+    <h2 id="s-simbolo">Símbolo</h2>
+    <div class="par">
+      <div class="painel" data-tema="escuro">
+        <div class="nome">Tema escuro: 16, 24, 32 e 64 px</div>
+        <div class="linha-icones">
+          <img src="marca/simbolo.svg" width="16" height="16" alt="">
+          <img src="marca/simbolo.svg" width="24" height="24" alt="">
+          <img src="marca/simbolo.svg" width="32" height="32" alt="">
+          <img src="marca/simbolo.svg" width="64" height="64" alt="Símbolo do Viraliza+">
+        </div>
+        <div class="aba-favicon"><img src="marca/favicon.svg" width="16" height="16" alt="">Biblioteca · Viraliza+</div>
+      </div>
+      <div class="painel" data-tema="claro">
+        <div class="nome">Tema claro</div>
+        <div class="linha-icones">
+          <img src="marca/simbolo.svg" width="16" height="16" alt="">
+          <img src="marca/simbolo.svg" width="24" height="24" alt="">
+          <img src="marca/simbolo.svg" width="32" height="32" alt="">
+          <img src="marca/simbolo.svg" width="64" height="64" alt="">
+        </div>
+        <div class="aba-favicon"><img src="marca/favicon.svg" width="16" height="16" alt="">Biblioteca · Viraliza+</div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-tipografia">
+    <h2 id="s-tipografia">Tipografia</h2>
+    <div class="par">
+      <div class="painel espec" data-tema="escuro">
+        <div class="nome">Schibsted Grotesk variável, pesos 400 a 700, 33 KB</div>
+        <div class="display">Cortes prontos para revisar</div>
+        <div class="titulo">Aprovar, ajustar ou descartar</div>
+        <p>Tempo de corte e de legenda vêm de sinais medidos. O que um modelo sugeriu aparece como sugestão, e a decisão final é sua.</p>
+        <div class="numeros">00:14:32 – 00:15:02 · 30 s · 1 280 palavras</div>
+      </div>
+      <div class="painel" data-tema="escuro">
+        <div class="nome">Escala</div>
+        <table>
+          <thead><tr><th>Uso</th><th>Peso</th><th>Tamanho / linha</th></tr></thead>
+          <tbody>
+            <tr><td>Exibição (login)</td><td>700</td><td>48 / 52 px</td></tr>
+            <tr><td>Título de tela</td><td>600</td><td>24 / 32 px</td></tr>
+            <tr><td>Subtítulo</td><td>600</td><td>18 / 28 px</td></tr>
+            <tr><td>Corpo</td><td>400</td><td>14 / 20 px</td></tr>
+            <tr><td>Rótulo e botão</td><td>500</td><td>14 / 20 px</td></tr>
+            <tr><td>Apoio</td><td>500</td><td>12 / 16 px</td></tr>
+          </tbody>
+        </table>
+        <p class="suave" style="margin-top:16px">Tracking de −0,03 em na exibição e −0,02 em nos títulos. Números de tempo usam algarismos tabulares.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-densidade">
+    <h2 id="s-densidade">Densidade</h2>
+    <div class="par">
+      <div class="painel" data-tema="escuro">
+        <div class="nome">Linhas de 40 px, texto de 14 px (44 px em toque)</div>
+        <ul class="lista">
+          <li class="item" aria-current="true"><span>Corte 1</span><span class="tempo">00:14:32 · 30 s</span><span class="estado ok">Aprovado</span></li>
+          <li class="item"><span>Corte 2</span><span class="tempo">00:41:07 · 45 s</span><span class="estado">Em revisão</span></li>
+          <li class="item"><span>Corte 3</span><span class="tempo">00:52:19 · 60 s</span><span class="estado">Em revisão</span></li>
+          <li class="item"><span>Corte 4</span><span class="tempo">01:03:48 · 15 s</span><span class="estado">Descartado</span></li>
+        </ul>
+        <p class="suave" style="margin-top:16px"><kbd>J</kbd> <kbd>K</kbd> navegam entre cortes, <kbd>A</kbd> aprova, <kbd>D</kbd> descarta.</p>
+      </div>
+      <div class="painel" data-tema="claro">
+        <div class="nome">Mesmos valores no tema claro</div>
+        <ul class="lista">
+          <li class="item" aria-current="true"><span>Corte 1</span><span class="tempo">00:14:32 · 30 s</span><span class="estado ok">Aprovado</span></li>
+          <li class="item"><span>Corte 2</span><span class="tempo">00:41:07 · 45 s</span><span class="estado">Em revisão</span></li>
+          <li class="item"><span>Corte 3</span><span class="tempo">00:52:19 · 60 s</span><span class="estado">Em revisão</span></li>
+          <li class="item"><span>Corte 4</span><span class="tempo">01:03:48 · 15 s</span><span class="estado">Descartado</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-login">
+    <h2 id="s-login">Login: linha do tempo de cortes</h2>
+    <p class="suave" style="margin-bottom:16px">Único ponto com expressão de marca. Os cortes entram em sequência ao carregar (transform e opacity) e ficam parados com movimento reduzido.</p>
+    <div class="par" style="grid-template-columns: minmax(0, 1fr)">
+      <div class="moldura" data-tema="escuro">
+        <div class="login">
+          <div class="marca">
+            <img src="marca/logotipo-escuro.svg" alt="Viraliza+">
+            <h3>Do vídeo longo aos cortes prontos.</h3>
+            <p>Revise, ajuste e publique os melhores momentos.</p>
+            <svg class="linha-tempo" viewBox="0 0 640 140" aria-hidden="true" focusable="false">
+              <line class="lt-trilho" x1="0" y1="18" x2="640" y2="18"/>
+              <g class="lt-trilho">
+                <path d="M0 18v-6M64 18v-6M128 18v-6M192 18v-6M256 18v-6M320 18v-6M384 18v-6M448 18v-6M512 18v-6M576 18v-6M640 18v-6"/>
+              </g>
+              <rect class="lt-bruto" x="0" y="34" width="640" height="28" rx="6"/>
+              <g class="lt-grupo" style="--i:0"><rect class="lt-faixa" x="88" y="34" width="96" height="28" rx="6"/><line class="lt-linha" x1="88" y1="62" x2="88" y2="88"/><line class="lt-linha" x1="184" y1="62" x2="184" y2="88"/><rect class="lt-corte" x="88" y="88" width="96" height="28" rx="6"/></g>
+              <g class="lt-grupo" style="--i:1"><rect class="lt-faixa" x="288" y="34" width="64" height="28" rx="6"/><line class="lt-linha" x1="288" y1="62" x2="288" y2="88"/><line class="lt-linha" x1="352" y1="62" x2="352" y2="88"/><rect class="lt-corte" x="288" y="88" width="64" height="28" rx="6"/></g>
+              <g class="lt-grupo" style="--i:2"><rect class="lt-faixa" x="468" y="34" width="128" height="28" rx="6"/><line class="lt-linha" x1="468" y1="62" x2="468" y2="88"/><line class="lt-linha" x1="596" y1="62" x2="596" y2="88"/><rect class="lt-corte" x="468" y="88" width="128" height="28" rx="6"/></g>
+            </svg>
+          </div>
+          <form class="formulario" onsubmit="return false">
+            <h4>Entrar</h4>
+            <p class="suave">Acesse sua conta para continuar.</p>
+            <div class="campo"><label for="e1">E-mail</label><input id="e1" type="email" autocomplete="username"></div>
+            <div class="campo"><label for="s1">Senha</label><input id="s1" type="password" autocomplete="current-password"></div>
+            <button class="botao" type="button">Entrar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="par" style="margin-top:16px">
+      <div class="moldura estreita" data-tema="escuro">
+        <div class="login">
+          <div class="marca">
+            <img src="marca/logotipo-escuro.svg" alt="Viraliza+">
+            <h3>Do vídeo longo aos cortes prontos.</h3>
+            <svg class="linha-tempo" viewBox="0 0 640 140" aria-hidden="true" focusable="false">
+              <rect class="lt-bruto" x="0" y="34" width="640" height="28" rx="6"/>
+              <rect class="lt-corte" x="88" y="88" width="96" height="28" rx="6"/>
+              <rect class="lt-corte" x="288" y="88" width="64" height="28" rx="6"/>
+              <rect class="lt-corte" x="468" y="88" width="128" height="28" rx="6"/>
+            </svg>
+          </div>
+          <form class="formulario" onsubmit="return false">
+            <h4>Entrar</h4>
+            <div class="campo"><label for="e2">E-mail</label><input id="e2" type="email" autocomplete="username"></div>
+            <div class="campo"><label for="s2">Senha</label><input id="s2" type="password" autocomplete="current-password"></div>
+            <button class="botao" type="button">Entrar</button>
+          </form>
+        </div>
+      </div>
+      <div class="moldura estreita" data-tema="claro">
+        <div class="login">
+          <div class="marca">
+            <img src="marca/logotipo-claro.svg" alt="Viraliza+">
+            <h3>Do vídeo longo aos cortes prontos.</h3>
+            <svg class="linha-tempo" viewBox="0 0 640 140" aria-hidden="true" focusable="false">
+              <rect class="lt-bruto" x="0" y="34" width="640" height="28" rx="6"/>
+              <rect class="lt-corte" x="88" y="88" width="96" height="28" rx="6"/>
+              <rect class="lt-corte" x="288" y="88" width="64" height="28" rx="6"/>
+              <rect class="lt-corte" x="468" y="88" width="128" height="28" rx="6"/>
+            </svg>
+          </div>
+          <form class="formulario" onsubmit="return false">
+            <h4>Entrar</h4>
+            <div class="campo"><label for="e3">E-mail</label><input id="e3" type="email" autocomplete="username"></div>
+            <div class="campo"><label for="s3">Senha</label><input id="s3" type="password" autocomplete="current-password"></div>
+            <button class="botao" type="button">Entrar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

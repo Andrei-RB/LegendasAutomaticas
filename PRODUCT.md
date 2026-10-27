@@ -35,17 +35,18 @@ Sucesso: a pessoa gasta o tempo em decidir, não em procurar; a análise de 1 h 
 - Etapas do fluxo: ingestão, sinais, linha do tempo, candidatos, triagem, juiz, editor, consenso, revisão manual, enquadramento, legendas, renderização e postagens.
 - Tema escuro por padrão, com alternância para claro.
 - Telas hoje existentes: login, biblioteca, painel e configurações. Demais telas (revisão de cortes, editor de legenda) ainda não existem.
-- Decisões de produto em aberto: nome e identidade visual de marca, página de apresentação e idiomas além de PT-BR.
+- Decisões de produto em aberto: página de apresentação e idiomas além de PT-BR.
 
 ## 7. Compromissos de marca
 
 - Nome do produto: Viraliza+.
+- Identidade: logotipo tipográfico em Schibsted Grotesk 700 com o sinal de mais como símbolo em laranja de acento (`recursos/marca/`; regras em `DESIGN.md`, seção 3.3).
 - A marca ganha expressão de impacto apenas no login e na página de apresentação; o restante da aplicação prioriza fluidez e clareza.
 
 ## 8. Evidências disponíveis
 
 - Interface funcional de login e navegação em `frontend/` (tokens em `frontend/src/estilos.css`).
-- Não há depoimentos, clientes, métricas de uso, logotipo ou material de marca. Nenhum deve ser inventado.
+- Não há depoimentos, clientes nem métricas de uso. Nenhum deve ser inventado.
 
 ## 9. Princípios do produto
 

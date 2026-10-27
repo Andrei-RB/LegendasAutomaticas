@@ -24,24 +24,24 @@ colors:
   erro-claro: "oklch(0.5 0.2 27)"
 typography:
   titulo:
-    fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif"
+    fontFamily: "Schibsted Grotesk, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif"
     fontSize: "1.5rem"
     fontWeight: 600
     lineHeight: 1.33
     letterSpacing: "-0.025em"
   marca:
-    fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif"
+    fontFamily: "Schibsted Grotesk, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif"
     fontSize: "1.125rem"
     fontWeight: 600
     lineHeight: 1.56
     letterSpacing: "-0.025em"
   corpo:
-    fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif"
+    fontFamily: "Schibsted Grotesk, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.43
   rotulo:
-    fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif"
+    fontFamily: "Schibsted Grotesk, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 500
     lineHeight: 1.43
@@ -96,7 +96,7 @@ components:
 
 # Sistema de design: Viraliza+
 
-Os valores acima descrevem a implementação existente em `frontend/src/estilos.css` e nos componentes de `frontend/src/componentes/`. Sufixo `-claro` indica o tema claro; os demais valem para o tema escuro, que é o padrão.
+Cores, raios, espaçamentos e componentes descrevem a implementação existente em `frontend/src/estilos.css` e em `frontend/src/componentes/`; a família tipográfica descreve a direção da Fase 1 (seção 3), ainda não implementada. Sufixo `-claro` indica o tema claro; os demais valem para o tema escuro, que é o padrão.
 
 ## 1. Visão geral
 
@@ -104,7 +104,7 @@ Os valores acima descrevem a implementação existente em `frontend/src/estilos.
 
 A aplicação é uma bancada de trabalho: superfícies escuras e neutras, texto de alto contraste e um único acento laranja que marca apenas o que está ativo ou é a próxima ação. A interface recua para que o vídeo e a transcrição ocupem o primeiro plano. Prioridade: fluidez e clareza, para quem revisa muitos cortes por dia.
 
-Referências de comportamento, confirmadas pela direção do produto: a resposta instantânea, a barra lateral densa e silenciosa e os atalhos de teclado de uma ferramenta de gestão de tarefas; o acento que se destaca sobre o fundo escuro sem cansar, como em um lançador de comandos; a convivência de transcrição e vídeo na mesma tela, como em um editor de vídeo por texto. A marca (login e página de apresentação) pode ser mais expressiva, com tipografia de destaque e transições entre seções, desde que o movimento tenha propósito. Esse trecho de marca ainda não foi implementado.
+Referências de comportamento, confirmadas pela direção do produto: a resposta instantânea, a barra lateral densa e silenciosa e os atalhos de teclado de uma ferramenta de gestão de tarefas; o acento que se destaca sobre o fundo escuro sem cansar, como em um lançador de comandos; a convivência de transcrição e vídeo na mesma tela, como em um editor de vídeo por texto. A marca (login e página de apresentação) pode ser mais expressiva, com tipografia de destaque e uma linha do tempo de cortes, desde que o movimento tenha propósito. A direção está definida na seção 3.3 e será implementada na Fase 3 do redesenho.
 
 Rejeições confirmadas: cartão centralizado genérico, gradiente roxo, ícones decorativos sem função e animações que atrasem o trabalho.
 
@@ -138,18 +138,31 @@ Neutros quentes com um acento laranja de baixa frequência. Todos os valores em 
 
 ## 3. Tipografia
 
-**Fonte de interface:** pilha do sistema (`ui-sans-serif`, `system-ui`, Segoe UI, Roboto, Arial). Sem fonte própria hoje.
+**Direção da Fase 1 (implementação na Fase 2):** família única Schibsted Grotesk variável, subconjunto latino em WOFF2 hospedado em `recursos/fontes/schibsted-grotesk/` (33 KB, licença OFL em `OFL.txt`), eixo de peso limitado a 400–700, algarismos tabulares. A pilha do sistema permanece como reserva (`ui-sans-serif`, `system-ui`, Segoe UI, Roboto, Arial) e a fonte carrega com `font-display: swap`. Até a Fase 2, o produto usa apenas a pilha do sistema.
 
-**Caráter:** neutra e nativa; a identidade vem do peso e do espaçamento, não da família. A fonte de destaque da marca (login e página de apresentação) está em aberto.
+**Caráter:** neutra e precisa; a identidade vem do peso e do espaçamento. O mesmo arquivo serve a interface e a marca, com peso 700 na exibição do login.
 
 ### 3.1 Hierarquia
-- **Título** (600, 1,5 rem, 1,33, tracking −0,025 em): título de página e do formulário.
-- **Marca** (600, 1,125 rem, 1,56, tracking −0,025 em, cor de acento): nome do produto na barra lateral.
+- **Exibição** (700, 3 rem, 1,08, tracking −0,03 em): apenas no login e na página de apresentação.
+- **Título** (600, 1,5 rem, 1,33, tracking −0,02 em): título de página e do formulário.
+- **Subtítulo** (600, 1,125 rem, 1,56, tracking −0,015 em): seções e painéis.
 - **Corpo** (400, 0,875 rem, 1,43): conteúdo e mensagens.
 - **Rótulo** (500, 0,875 rem, 1,43): rótulos de campo, botões e itens de menu.
+- **Apoio** (500, 0,75 rem, 1,33): legendas, estados e atalhos.
 
 ### 3.2 Regras nomeadas
-**A Regra do Tamanho Único.** Texto de interface fica em 14 px; a escala só sobe para título e marca.
+**A Regra do Tamanho Único.** Texto de interface fica em 14 px; a escala só sobe para título, subtítulo e exibição, e desce apenas para apoio.
+
+**A Regra do Tempo Tabular.** Tempos, durações e contagens usam algarismos tabulares para alinhar colunas.
+
+### 3.3 Marca
+
+- **Logotipo:** "Viraliza" em Schibsted Grotesk 700, convertido em curvas, seguido do símbolo. Arquivos em `recursos/marca/`: `logotipo-escuro.svg`, `logotipo-claro.svg`, `simbolo.svg` e `favicon.svg`.
+- **Símbolo:** sinal de mais em laranja de acento, com o braço direito separado por um corte. Dois retângulos e uma barra, sem curvas, legível a partir de 16 px.
+- **Área livre:** metade da altura do símbolo em todos os lados. Altura mínima do logotipo: 20 px; do símbolo isolado: 16 px.
+- **Não faça:** alterar a cor do símbolo fora do acento, aplicar sombra ou contorno, inclinar, animar o símbolo ou usar o logotipo sobre imagem sem contraste.
+- **Login:** única superfície com expressão de marca. Exibição em 700 e uma linha do tempo de cortes em SVG de geometria simples; os cortes entram em sequência com `transform` e `opacity` (640 ms, saída exponencial) e ficam parados com `prefers-reduced-motion`.
+- **Prancha de validação:** `recursos/prancha-marca.html`.
 
 ## 4. Layout
 
