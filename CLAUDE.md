@@ -19,8 +19,8 @@ Sistema local, executado em Docker, que recebe um vídeo longo e produz:
 
 | Item | Situação |
 |---|---|
-| Fase | Planejamento concluído. Próxima etapa: Sprint S0 (issue #2, tarefas #12–#18) |
-| Código existente | Versão 1 em `app/`, `frontend/frontend_app.py` (Streamlit) e `launcher.py`. Será reorganizada na S0, no mesmo repositório |
+| Fase | S0 concluída (épico #2). Em curso: S1, com o redesenho da interface antes da tarefa "API e telas" |
+| Código existente | Monorepo reorganizado na S0: `backend/`, `frontend/`, `infra/`, `pacotes/`, `render/`. O código da versão 1 foi removido |
 | Referências | `docs/plano-v2.md` (decisões D1–D54, F1–F10), `docs/plano-ia-agy.md` (IA por assinatura e viralização), `docs/protocolo-frontend.md` (construção de interface) e `docs/sprints/` (tarefas) |
 | Precedência | Issue do GitHub > `docs/sprints/` > `docs/plano-ia-agy.md` > `docs/plano-v2.md` > este arquivo |
 
@@ -159,7 +159,7 @@ Válidos a partir da S0. Antes disso, consultar o `README.md`.
 |---|---|
 | Subir serviços | `docker compose -f infra/docker-compose.yml up -d` |
 | Verificar GPU | `docker compose -f infra/docker-compose.yml exec worker-gpu nvidia-smi` |
-| Migrações | `docker compose -f infra/docker-compose.yml exec api alembic upgrade head` |
+| Migrações | `docker compose -f infra/docker-compose.yml run --rm migrar` |
 | Lint | `ruff check backend && ruff format --check backend` |
 | Testes backend | `pytest backend -m "not lento"` |
 | Testes frontend | `cd frontend && npm run test` |
