@@ -55,6 +55,29 @@
 
 **Aceite:** o checklist de segurança está documentado nesta issue.
 
+<!-- issue: [S7] Varredura dinâmica com OWASP ZAP | labels: infra, testes, sprint-7 -->
+**1. Objetivo:** verificar a pilha em execução contra falhas comuns de aplicação web.
+
+**2. Contexto:**
+- Alvo: varredura sem achado relevante; complementa as varreduras estáticas da S1.
+- Cabeçalhos e limites também são conferidos por `curl`.
+
+**3. Dependências:** "Segurança e limites" (S7) e as telas da S1.
+
+**4. Tarefas:**
+- [ ] Job `zap` com varredura de linha de base em PR que altera segurança, `nginx` ou API.
+- [ ] Varredura completa semanal, autenticada, contra a pilha do compose de CI.
+- [ ] Testes de `curl` para CSP, `Permissions-Policy`, COOP/CORP, `Referrer-Policy`, cookies, CSRF e limites de taxa e de corpo.
+- [ ] Relatório anexado à execução; exceções documentadas em arquivo versionado.
+
+**5. Fora de escopo:** teste de intrusão manual.
+
+**6. Testes exigidos:** regra de cabeçalho removida em PR de teste deixa o job vermelho; o PR é descartado sem mesclar.
+
+**7. Aceite:**
+- Varredura completa sem alerta de severidade média ou alta.
+- Resultado registrado na issue "Segurança e limites".
+
 <!-- issue: [S7] Editor: atalhos, desfazer/refazer e celular | labels: frontend, sprint-7, ui -->
 **Objetivo:** produtividade no PC e acesso pelo celular.
 

@@ -42,8 +42,101 @@
 
 **Aceite:** um ID inventado pela IA é rejeitado (teste com mock).
 
+<!-- issue: [S1] Redesenho da interface: marca, design system e telas-base | labels: frontend, sprint-1, ui -->
+**1. Objetivo:** substituir a interface base por uma identidade e um design system próprios, e entregar login, Biblioteca, Painel e Configurações no padrão de qualidade do protocolo de frontend, antes das telas de fluxo.
+
+**2. Contexto:**
+- `docs/protocolo-frontend.md`, `PRODUCT.md`, `DESIGN.md` e `.impeccable/design.json`.
+- Estado atual: login funcional; Biblioteca, Painel e Configurações são marcadores de posição.
+- Perfil de medição: CPU 6x mais lenta e rede Fast 3G (cerca de 1,6 Mbps, 150 ms de RTT), emulados no Chromium.
+- Primitivos de acessibilidade: React Aria Components, carregados por rota e somente os usados; a rota de login não usa biblioteca. A escolha é confirmada com `pick-ui-library` e com a medição de bytes na Fase 2; a alternativa é Radix Primitives.
+- Tipografia: fonte variável com licença OFL, subconjunto WOFF2 hospedado localmente.
+
+| Métrica (sob o perfil acima) | Orçamento |
+|---|---|
+| LCP / INP / CLS | < 2,5 s / < 200 ms / < 0,1 |
+| JS inicial da rota de login (comprimido) | ≤ 90 KB |
+| JS de qualquer rota (comprimido) | ≤ 170 KB |
+| CSS crítico | ≤ 20 KB |
+| Fontes | ≤ 30 KB por pacote |
+
+**3. Dependências:** #17 (frontend base) e #18 (CI).
+
+**4. Tarefas (uma fase por PR; a fase seguinte começa após validação da anterior):**
+- [ ] Fase 1, direção visual: marca (nome estilizado, logotipo em SVG, peso de destaque), tipografia e densidade; atualizar `PRODUCT.md` e `DESIGN.md`.
+- [ ] Fase 2, design system: tokens de cor, tipografia, espaço, raio e movimento; componentes base com estados completos; vitrine de desenvolvimento fora do pacote de produção; teste de orçamento de bytes por rota.
+- [ ] Fase 3, login e marca: tela com expressão de marca, formulário acessível, erro e carregamento.
+- [ ] Fase 4, layout e telas: estrutura de navegação, Biblioteca, Painel e Configurações com estados vazio, carregando, erro, sucesso, parcial e sem conexão; 390 px e 1440 px.
+- [ ] Fase 5, movimento: transições com `transform` e `opacity`, `prefers-reduced-motion`, nenhum quadro acima de 16 ms.
+- [ ] Fase 6, auditoria: `detect` ou `audit` da `impeccable`, `design:accessibility-review`, medição sob o perfil 6x/3G e capturas analisadas.
+
+**5. Fora de escopo:** telas de Enviar, Análise, Galeria e Editor (issue "API e telas"); página de apresentação; service worker e uso offline; idiomas além de PT-BR.
+
+**6. Testes exigidos:** acessibilidade automatizada por componente (axe); navegação completa por teclado nas telas; orçamento de bytes por rota; contraste dos tokens nos dois temas; Playwright com capturas em 1440 px e 390 px, nos temas escuro e claro.
+
+**7. Aceite:**
+- `cd frontend && npm run test && npx playwright test` aprovados.
+- Medição sob o perfil 6x/3G dentro dos orçamentos da seção 2.
+- `detect` ou `audit` sem achado P0 ou P1; revisores sem achado CRÍTICO ou ALTO.
+- PR com capturas, métricas e roteiro "O que ver".
+
+<!-- issue: [S1] Medição de desempenho no CI (Lighthouse CI, perfil 6x/3G) | labels: testes, infra, frontend, sprint-1 -->
+**1. Objetivo:** medir LCP, INP, CLS e tamanho de pacote a cada PR sob o perfil de celular modesto e rede lenta.
+
+**2. Contexto:**
+- Orçamentos na issue "Redesenho da interface".
+- Perfil: CPU 6x mais lenta e rede Fast 3G, emulados no Chromium.
+- O job começa informativo; torna-se obrigatório na `main` após uma linha de base estável.
+
+**3. Dependências:** #18 e a Fase 2 da issue "Redesenho da interface".
+
+**4. Tarefas:**
+- [ ] Job `desempenho` com Lighthouse CI contra a pilha de CI.
+- [ ] Configuração versionada do perfil e dos orçamentos.
+- [ ] Relatório anexado ao PR.
+- [ ] Linha de base registrada em `docs/`.
+
+**5. Fora de escopo:** monitoramento em produção.
+
+**6. Testes exigidos:** um PR de teste que ultrapassa o orçamento de bytes deixa o job vermelho; o PR é descartado sem mesclar.
+
+**7. Aceite:**
+- `gh run list --workflow ci.yml --limit 3` mostra o job `desempenho`.
+- Após a linha de base, o job consta na proteção da `main`.
+
+<!-- issue: [S1] Varreduras de segurança no CI (dependências, imagens, segredos, código) | labels: infra, testes, sprint-1 -->
+**1. Objetivo:** detectar vulnerabilidades, segredos e más configurações em cada PR, com ferramentas gratuitas.
+
+**2. Contexto:**
+- Alvo: OWASP ASVS e Top 10, alinhamento NIST CSF.
+- O repositório é público: o CodeQL é gratuito.
+- Já existem `pip-audit` e o Dependabot.
+
+**3. Dependências:** #18.
+
+**4. Tarefas:**
+- [ ] Trivy sobre o sistema de arquivos e as imagens do compose.
+- [ ] gitleaks sobre o histórico e o diff.
+- [ ] Semgrep com regras de Python, TypeScript e Docker.
+- [ ] CodeQL para Python e JavaScript/TypeScript.
+- [ ] hadolint nos Dockerfiles.
+- [ ] OSV-Scanner para `npm` e `pip`.
+- [ ] Actions fixadas por SHA, com atualização pelo Dependabot.
+- [ ] SBOM (Syft) anexado à execução.
+- [ ] Achados de severidade alta bloqueiam o PR; exceções documentadas em arquivo versionado.
+
+**5. Fora de escopo:** varredura dinâmica (issue de OWASP ZAP na S7).
+
+**6. Testes exigidos:** um segredo falso e uma dependência vulnerável em PR de teste deixam o job vermelho; o PR é descartado sem mesclar.
+
+**7. Aceite:**
+- Jobs de segurança verdes na `main`.
+- Os jobs constam na proteção da `main`.
+
 <!-- issue: [S1] API e telas: enviar, análise, galeria, editor mínimo | labels: backend, frontend, sprint-1, ui -->
 **Objetivo:** permitir usar o fluxo pela interface.
+
+**Dependência:** design system aprovado (issue "Redesenho da interface", Fase 2).
 
 - [ ] Telas: Enviar (perfil, duração, N) e Análise (etapas ao vivo + notificação do navegador).
 - [ ] Galeria com nota e motivo.
