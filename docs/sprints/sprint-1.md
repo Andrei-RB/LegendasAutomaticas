@@ -80,7 +80,7 @@
 - `detect` ou `audit` sem achado P0 ou P1; revisores sem achado CRÍTICO ou ALTO.
 - PR com capturas, métricas e roteiro "O que ver".
 
-<!-- issue: [S1] Medição de desempenho no CI (Lighthouse CI, perfil 6x/3G) | labels: testes, infra, frontend, sprint-1 -->
+<!-- issue: [S1] Medição de desempenho no CI (Lighthouse CI, perfil 6x/3G) | labels: testes, infra, sprint-1 -->
 **1. Objetivo:** medir LCP, INP, CLS e tamanho de pacote a cada PR sob o perfil de celular modesto e rede lenta.
 
 **2. Contexto:**
