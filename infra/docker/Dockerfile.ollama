@@ -1,4 +1,4 @@
-FROM ollama/ollama:0.40.10
+FROM ollama/ollama:0.40.11
 
 # O volume nomeado herda este dono, permitindo executar sem root.
 RUN mkdir -p /modelos && chown 10001:10001 /modelos
