@@ -217,7 +217,7 @@ services:
 
   redis:
     <<: *endurecimento
-    image: redis:7.4.11-alpine
+    image: redis:7.4.12-alpine
     user: "redis"
     entrypoint: ["sh", "-c"]
     command:
